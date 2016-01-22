@@ -31,7 +31,7 @@ setup(
         'docopt',
     ],
     entry_points={
-        'console_scripts': ['sdreaper=sdreaper.sdreaper:main'],
+        'console_scripts': ['sdreaper=sdreaper.main:main'],
     },
     tests_require=[
         'mock',
