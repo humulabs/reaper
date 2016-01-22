@@ -26,9 +26,6 @@ setup(
     author_email='michael@keirnan.com',
     packages=['sdreaper'],
     package_dir={'': '.'},
-    package_data={
-      'sdreaper': ['*'],
-      },
     install_requires=[
         'pyserial',
         'docopt',

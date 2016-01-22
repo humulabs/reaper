@@ -32,6 +32,6 @@ upload:
 	           --upload $(realpath $(SKETCH_DIR)/$(SKETCH)/$(SKETCH).ino)
 
 run:
-	python serial-test.py $(PORT) $(BAUD)
+	python python/sdreaper/sdreaper.py -p $(PORT) -b $(BAUD)
 
 .PHONY: go compile upload run

@@ -13,6 +13,8 @@ very-clean: clean
 
 install:
 	python setup.py install
+
+install-dev:
 	pip install \
 	    pep8 \
 	    mock
@@ -21,4 +23,4 @@ test:
 	pep8 setup.py sdreaper
 	py.test
 
-.PHONY: build clean very-clean install test
+.PHONY: build clean very-clean install install-db test
