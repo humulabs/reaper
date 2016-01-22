@@ -1,0 +1,4 @@
+/build
+/pycrc-0.9
+/*.sublime-*
+/Arduino-CmdMessenger
