@@ -14,6 +14,13 @@ Currently tested on Arduino SAMD boards.
 make
 ```
 
+The `SKETCH_DIR` and `SKETCH` env vars tell make where to find sketches and what
+sketch to use. For example to build a sketch in the sketches dir:
+
+```
+SKETCH_DIR=sketches SKETCH=bench make compile
+```
+
 ## serial-test.py
 
 Run it with `make run`. It will wait for serial port to be available so you can
@@ -21,7 +28,7 @@ run `serial-test` before resetting the Arduino.
 
 ## sketches
 
-Programs used for development of Reaper. Some will become Reaper examples, some
+Misc Programs used for development of Reaper. Some may become Reaper examples, some
 will get tossed.
 
 

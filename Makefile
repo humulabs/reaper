@@ -14,6 +14,8 @@ BOARD ?= arduino:samd:arduino_zero_pro_bl
 PORT ?= /dev/tty.usbmodem1421
 
 BAUD ?= 9600
+
+SKETCH_DIR ?= Reaper/examples
 SKETCH ?= ListFiles
 
 go: upload run
@@ -21,13 +23,13 @@ go: upload run
 compile:
 	@mkdir -p build
 	$(ARDUINO) --board $(BOARD) \
-	           --verify $(realpath sketches/$(SKETCH)/$(SKETCH).ino)
+	           --verify $(realpath $(SKETCH_DIR)/$(SKETCH)/$(SKETCH).ino)
 
 upload:
 	@mkdir -p build
 	$(ARDUINO) --board $(BOARD) \
 	           --port $(PORT) \
-	           --upload $(realpath sketches/$(SKETCH)/$(SKETCH).ino)
+	           --upload $(realpath $(SKETCH_DIR)/$(SKETCH)/$(SKETCH).ino)
 
 run:
 	python serial-test.py $(PORT) $(BAUD)
