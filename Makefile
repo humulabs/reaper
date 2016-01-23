@@ -7,7 +7,7 @@ ARDUINO=/Applications/Arduino.org.app/Contents/MacOS/Arduino
 
 # DBG port .org
 # BOARD ?= arduino:samd:arduino_zero_pro_bl_dbg
-# PORT ?= /dev/tty.usbmodem1422
+# PORT ?= /dev/tty.usbmodem1412
 
 # USB port .org
 BOARD ?= arduino:samd:arduino_zero_pro_bl
@@ -32,6 +32,6 @@ upload:
 	           --upload $(realpath $(SKETCH_DIR)/$(SKETCH)/$(SKETCH).ino)
 
 run:
-	python python/sdreaper/sdreaper.py -p $(PORT) -b $(BAUD)
+	python python/sdreaper/main.py -p $(PORT) -b $(BAUD) list
 
 .PHONY: go compile upload run

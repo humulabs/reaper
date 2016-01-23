@@ -2,14 +2,15 @@ import time
 import serial
 from serial.serialutil import SerialException
 
-# Arduino Reaper EOF
-EOF = 0xff
-
+# control codes
+EOT = 0x04
+SYN = 0x16
 
 class Reaper(object):
-    def __init__(self, port=None, baud=None):
+    def __init__(self, port=None, baud=None, timeout=0.5):
         self.port = port
         self.baud = baud
+        self.timeout = timeout
         self.conn = None
 
     def connect(self):
@@ -18,20 +19,61 @@ class Reaper(object):
 
         while self.conn is None:
             try:
-                self.conn = serial.Serial(self.port, self.baud)
+                self.conn = serial.Serial(port=self.port,
+                                          baudrate=self.baud,
+                                          bytesize=serial.EIGHTBITS,
+                                          parity=serial.PARITY_NONE,
+                                          stopbits=serial.STOPBITS_ONE,
+                                          timeout=self.timeout)
             except SerialException as se:
                 time.sleep(1.0)
                 print('.', end='.', flush=True)
 
         print('\nconnected to {} at {} baud.'.format(self.port, self.baud))
+        time.sleep(.1)
 
-    def read(self, callback=None):
-        """Read until EOF and return as bytes read, not including EOF"""
+    def read(self, printChars=True, timeout=None):
+        """
+        Read until EOT and return as bytes read, not including EOT. If
+        printChars is True then print each character as it is read.
+        """
         data = []
+        t1 = time.time()
+        t2 = 0
         while True:
-            ch = self.conn.read()[0]
-            if ch == EOF:
+            bytesRead = self.conn.read(size=1)
+            if not bytesRead or bytesRead[0] == EOT:
                 return data
-            if callback is not None:
-                callback(ch)
-            data.append(ch)
+            t2 = time.time()
+            if timeout is not None and t2 - t1 > timeout:
+                return data
+            if printChars:
+                print(chr(bytesRead[0]), end='', flush=True)
+            data.append(bytesRead[0])
+
+    def sync(self):
+        while True:
+            self.conn.write([SYN])
+            time.sleep(.01)
+            print('*', end='', flush=True)
+            response = self.read(timeout=1)
+            if response and response[0] == SYN:
+                print('SYN\n')
+                return
+
+    def commands(self, commands):
+        self.read(timeout=3)
+        for cmd in commands:
+            self.command(cmd)
+
+    def command(self, command):
+        print('sending {}\n'.format(command))
+        self.sync()
+        time.sleep(.01)
+        for c in command.rstrip('\n'):
+            self.conn.write([ord(c)])
+            time.sleep(.01)
+        self.conn.write([ord('\n')])
+        self.conn.flush()
+        time.sleep(.01)
+        self.read()
