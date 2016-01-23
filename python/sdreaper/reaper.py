@@ -55,19 +55,21 @@ class Reaper(object):
         while True:
             self.conn.write([SYN])
             time.sleep(.01)
-            print('*', end='', flush=True)
+            # print('*', end='', flush=True)
             response = self.read(timeout=1)
             if response and response[0] == SYN:
-                print('SYN\n')
+                # print('SYN\n')
                 return
 
-    def commands(self, commands):
+    def commands(self, commands, printChars=True):
         self.read(timeout=3)
+        results = []
         for cmd in commands:
-            self.command(cmd)
+            results.append(self.command(cmd))
+        return results
 
-    def command(self, command):
-        print('sending {}\n'.format(command))
+    def command(self, command, printChars=True):
+        # print('sending {}\n'.format(command))
         self.sync()
         time.sleep(.01)
         for c in command.rstrip('\n'):
@@ -76,4 +78,4 @@ class Reaper(object):
         self.conn.write([ord('\n')])
         self.conn.flush()
         time.sleep(.01)
-        self.read()
+        return self.read(printChars=printChars)

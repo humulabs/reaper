@@ -12,7 +12,7 @@ boolean ReaperCommandProcessor::processCommandLine() {
   Serial.print("processCommandLine: ");
   Serial.println(_commandBuffer);
 
-  char* cmd = strtok(_commandBuffer, " \t");
+  char* cmd = strtok(_commandBuffer, " ");
 
   if (cmd != NULL) {
     if (strcmp(cmd, "exit") == 0) {
@@ -22,12 +22,16 @@ boolean ReaperCommandProcessor::processCommandLine() {
     }
 
     else if (strcmp(cmd, "del") == 0) {
-      _stream->print(">del ");
+      _stream->print("del ");
       _stream->println(strtok(NULL, ""));
     }
 
     else if (strcmp(cmd, "list") == 0) {
       _reaper->listFiles();
+    }
+
+    else if (strcmp(cmd, "echo") == 0) {
+      _stream->println(strtok(NULL, ""));
     }
 
     _stream->write(EOT);
