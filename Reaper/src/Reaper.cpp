@@ -1,13 +1,18 @@
 #include "Reaper.h"
 
-Reaper::Reaper() {
-}
-
+/**
+ * Construct a Reaper instance.
+ * @param stream stream to use for command output
+ * @param chipSelect chip select pin for SD card
+ */
 Reaper::Reaper(Stream& stream, int chipSelect) {
   _stream = &stream;
   _chipSelect = chipSelect;
 }
 
+/**
+ * Connect to SD card.
+ */
 void Reaper::init() {
   if (!_sd.begin(_chipSelect, SPI_FULL_SPEED)) {
     if (!_sd.begin(_chipSelect, SPI_HALF_SPEED)) {
@@ -22,6 +27,15 @@ void Reaper::init() {
 
 }
 
+/**
+ * @internal
+ *
+ * listFiles helper.
+
+ * @param stream     [description]
+ * @param dir        [description]
+ * @param parentPath [description]
+ */
 void listDir(Stream* stream, File dir, String parentPath) {
   File entry = dir.openNextFile();
   while (entry) {
@@ -46,6 +60,13 @@ void listDir(Stream* stream, File dir, String parentPath) {
   }
 }
 
+/**
+ * List all files on SD card. All files in all directories on the card are
+ * included in the listing. Directory entries themselves are not included.
+ * The response includes a header line and one line for each file found
+ * on the card. The fields in each line are separated by `\t` and the lines
+ * are separated by `\r\n`.
+ */
 void Reaper::listFiles() {
   File root;
   root.open("/");

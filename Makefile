@@ -16,17 +16,26 @@ PORT ?= /dev/tty.usbmodem1421
 BAUD ?= 9600
 
 SKETCH_DIR ?= Reaper/examples
-SKETCH ?= ListFiles
+SKETCH ?= CommandLoop
+
+DOXYGEN ?= /Applications/Doxygen.app/Contents/Resources/doxygen
 
 go: upload run
 
-compile:
+build_dir:
 	@mkdir -p build
+
+clean:
+	$(RM) build
+
+doc: build_dir
+	doxygen Reaper/.doxygen.conf
+
+compile: build_dir
 	$(ARDUINO) --board $(BOARD) \
 	           --verify $(realpath $(SKETCH_DIR)/$(SKETCH)/$(SKETCH).ino)
 
-upload:
-	@mkdir -p build
+upload: build_dir
 	$(ARDUINO) --board $(BOARD) \
 	           --port $(PORT) \
 	           --upload $(realpath $(SKETCH_DIR)/$(SKETCH)/$(SKETCH).ino)
@@ -34,4 +43,4 @@ upload:
 run:
 	python python/sdreaper/main.py -p $(PORT) -b $(BAUD) list
 
-.PHONY: go compile upload run
+.PHONY: go compile upload run doc build_dir
