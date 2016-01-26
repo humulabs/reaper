@@ -1,17 +1,17 @@
 # arduino.cc
-# ARDUINO=/Applications/Arduino-1.6.6.app/Contents/MacOS/Arduino -v
+# ARDUINO=/Applications/Arduino-1.6.7.app/Contents/MacOS/Arduino
 # BOARD ?= arduino:samd:arduino_zero_edbg
 
 # arduino.org
 ARDUINO=/Applications/Arduino.org.app/Contents/MacOS/Arduino
 
 # DBG port .org
-# BOARD ?= arduino:samd:arduino_zero_pro_bl_dbg
-# PORT ?= /dev/tty.usbmodem1412
+BOARD ?= arduino:samd:arduino_zero_pro_bl_dbg
+PORT ?= /dev/tty.usbmodem1412
 
 # USB port .org
-BOARD ?= arduino:samd:arduino_zero_pro_bl
-PORT ?= /dev/tty.usbmodem1421
+# BOARD ?= arduino:samd:arduino_zero_pro_bl
+# PORT ?= /dev/tty.usbmodem1421
 
 BAUD ?= 9600
 
@@ -41,6 +41,6 @@ upload: build_dir
 	           --upload $(realpath $(SKETCH_DIR)/$(SKETCH)/$(SKETCH).ino)
 
 run:
-	python python/sdreaper/main.py -p $(PORT) -b $(BAUD) list
+	python python/sdreaper/main.py -p $(PORT) -b $(BAUD)
 
 .PHONY: go compile upload run doc build_dir

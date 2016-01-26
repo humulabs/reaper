@@ -24,7 +24,6 @@ void Reaper::init() {
   else {
     _stream->println(F("Connected to SD card at full speed"));
   }
-
 }
 
 /**

@@ -79,3 +79,17 @@ class Reaper(object):
         self.conn.flush()
         time.sleep(.01)
         return self.read(printChars=printChars)
+
+    def receiveFile(self):
+        def getc(size, timeout=1):
+            data = self.conn.read(size)
+            return data
+
+        def putc(data, timeout=1):
+            return self.conn.write(data)
+
+        from xmodem import XMODEM1k
+        xm = XMODEM1k(getc, putc)
+        with open('foo.dat', 'wb+') as f:
+            xm.recv(f)
+
