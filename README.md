@@ -1,3 +1,15 @@
+# Running File Transcer test
+
+- adjust file name and baud in FileTransfer.ino
+- upload FileTransfer sketch and run it
+- adjust baud in python test program `serial-xmodem.py`
+
+run:
+
+```
+python serial-xmodem.py /dev/tty.usbmodem1421
+```
+
 # Reaper
 
 Arduino library and command line utility to download and delete SD card files.
