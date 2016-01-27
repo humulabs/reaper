@@ -18,7 +18,7 @@ char BUFFER[BATCH_SIZE];
 
 void setup()
 {
-  Serial.begin(9600);
+  // Serial.begin(9600);
   SerialUSB.begin(BAUD);
   while(!SerialUSB);
 
@@ -26,14 +26,14 @@ void setup()
   setFullSpeed();
   usbInfo();
 
-  Serial.print("SIZE=");
-  Serial.println(SIZE);
+  // Serial.print("SIZE=");
+  // Serial.println(SIZE);
 
-  Serial.print("BAUD=");
-  Serial.println(BAUD);
+  // Serial.print("BAUD=");
+  // Serial.println(BAUD);
 
-  Serial.print("BATCH_SIZE=");
-  Serial.println(BATCH_SIZE);
+  // Serial.print("BATCH_SIZE=");
+  // Serial.println(BATCH_SIZE);
 
 
   for (int i = 0; i < BATCH_SIZE; i++) {
@@ -48,22 +48,22 @@ void setup()
   unsigned long t2 = millis();
 
   float durationSeconds = (float)(t2 - t1) / 1000;
-  Serial.print("duration seconds: ");
-  Serial.println(durationSeconds);
-  Serial.print("rate: ");
-  Serial.print((float)SIZE / durationSeconds);
-  Serial.println(" bytes/second");
+  // Serial.print("duration seconds: ");
+  // Serial.println(durationSeconds);
+  // Serial.print("rate: ");
+  // Serial.print((float)SIZE / durationSeconds);
+  // Serial.println(" bytes/second");
 }
 
 void usbInfo() {
-  Serial.print("REG_USB_DEVICE_STATUS: ");
-  Serial.println(REG_USB_DEVICE_STATUS, HEX);
+  // Serial.print("REG_USB_DEVICE_STATUS: ");
+  // Serial.println(REG_USB_DEVICE_STATUS, HEX);
 
-  Serial.print("USB->DEVICE.STATUS.reg: ");
-  Serial.println(USB->DEVICE.STATUS.reg, HEX);
+  // Serial.print("USB->DEVICE.STATUS.reg: ");
+  // Serial.println(USB->DEVICE.STATUS.reg, HEX);
 
-  Serial.print("USB->DEVICE.STATUS.bit.SPEED: ");
-  Serial.println(USB->DEVICE.STATUS.bit.SPEED, HEX);
+  // Serial.print("USB->DEVICE.STATUS.bit.SPEED: ");
+  // Serial.println(USB->DEVICE.STATUS.bit.SPEED, HEX);
 }
 
 void sendBytes(unsigned long count) {
@@ -74,8 +74,8 @@ void sendBytes(unsigned long count) {
     SerialUSB.write(BUFFER, BATCH_SIZE);
     int pct = (i * 100) / numBatches;
     if (pct % 5 == 0 && pct != lastPct) {
-      Serial.print(pct);
-      Serial.print("..");
+      // Serial.print(pct);
+      // Serial.print("..");
       lastPct = pct;
     }
   }
@@ -83,7 +83,7 @@ void sendBytes(unsigned long count) {
   for (int i = 0; i < count - BATCH_SIZE * numBatches; i++) {
     SerialUSB.write(CHAR);
   }
-  Serial.println();
+  // Serial.println();
 }
 
 void setFullSpeed() {
