@@ -61,29 +61,30 @@ int Xmodem::sendPacket() {
   serialWrite(_packet, PACKET_SIZE);
   serialWrite((_crc >> 8) & 0xff);
   serialWrite(_crc & 0xff);
-  Serial.println("block sent, waiting for ACK/NAK ");
+  // Serial.println("block sent, waiting for ACK/NAK ");
 
   int c;
   while (true) {
     c = serialRead();
     if (c == NAK) {
-      Serial.println("got NAK, resending after reading any reading NAKs");
-      while (serialRead() != -1);
+      // Serial.println("got NAK, resending");
+      delay(5);
       return sendPacket();
     }
     else if (c == ACK) {
-      Serial.println("got ACK, continuing");
+      // Serial.println("got ACK, continuing");
+      _packetNumber++;
       return 0;
     }
     else if (c == CAN) {
-      Serial.println("got CAN, stopping");
+      // Serial.println("got CAN, stopping");
       return -1;
     }
     if (c != -1) {
-      Serial.print(" 0x");
-      Serial.println(c, HEX);
+      // Serial.print(" 0x");
+      // Serial.println(c, HEX);
     }
-    Serial.print('.');
+    // Serial.print('.');
     delay(500);
   }
 }
@@ -140,19 +141,20 @@ size_t Xmodem::fileRead(uint8_t *buffer, size_t count) {
  */
 size_t Xmodem::serialWrite(uint8_t *buffer, size_t count) {
 #ifdef ARDUINO
-  Serial.println(":writeBlock:");
-  // char s[4];
-  // for (int i = 0; i < count; i++) {
-  //   sprintf(s, "%02x ", buffer[i]);
-  //   Serial.print(s);
-  //   if ((i + 1) % 20 == 0) {
-  //     Serial.println();
-  //   }
-  // }
-  for (int i = 0; i < count; i++) {
-    _serial->write(buffer[i]);
+  // Serial.println("writing block");
+
+  uint8_t *current = buffer;
+  int remaining = count;
+  int batchSize = 128;
+  size_t written = 0;
+  while (remaining > 0) {
+    int currentBatchSize = min(batchSize, remaining);
+    written += _serial->write(current, currentBatchSize);
+    current += currentBatchSize;
+    remaining -= currentBatchSize;
   }
-  // return _serial->write(buffer, count);
+  return written;
+
 #else
   return write(_serial, buffer, count);
 #endif // ifdef ARDUINO
@@ -168,8 +170,8 @@ size_t Xmodem::serialWrite(uint8_t *buffer, size_t count) {
  */
 int Xmodem::serialWrite(uint8_t c) {
 #ifdef ARDUINO
-  Serial.print("write: ");
-  Serial.println(c, HEX);
+  // Serial.print("write: ");
+  // Serial.println(c, HEX);
   return _serial->write(c);
 #else
   return write(_serial, &c, 1);

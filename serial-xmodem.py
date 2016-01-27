@@ -9,7 +9,7 @@ import logging
 import sys
 
 logging.basicConfig(format='%(levelname)-5s %(message)s',
-                    level=logging.DEBUG)
+                    level=logging.INFO)
 
 port = serial.Serial(port=sys.argv[1],
                      parity=serial.PARITY_NONE,
@@ -19,7 +19,7 @@ port = serial.Serial(port=sys.argv[1],
                      xonxoff=0,
                      rtscts=0,
                      dsrdtr=0,
-                     baudrate=9600)
+                     baudrate=12582912)
 
 def readUntil(char = None):
     def serialPortReader():
