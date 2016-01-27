@@ -5,7 +5,7 @@ const unsigned long SIZE    = 1024 * 10 * 10;
 
 // I think SerialUSB may ignore baud:
 // https://www.pjrc.com/teensy/td_serial.html
-const unsigned long BAUD    = 115200;
+const unsigned long BAUD    = 9600;
 
 
 // arduino/samd/cores/arduino/USB/samd21_device.c indicated 128 is the largest
@@ -41,10 +41,11 @@ void setup()
   }
   unsigned long t1 = millis();
 
-  sendBytes(SIZE);
 
-  SerialUSB.write(EOT);
-  SerialUSB.end();
+  SerialUSB.println(SIZE, DEC);
+  sendBytes(SIZE);
+  SerialUSB.print('\n');
+
   unsigned long t2 = millis();
 
   float durationSeconds = (float)(t2 - t1) / 1000;

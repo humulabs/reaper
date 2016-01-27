@@ -1,12 +1,12 @@
 # arduino.cc
-# ARDUINO=/Applications/Arduino-1.6.7.app/Contents/MacOS/Arduino
-# BOARD ?= arduino:samd:arduino_zero_edbg
+ARDUINO=/Applications/Arduino-1.6.7.app/Contents/MacOS/Arduino
+BOARD ?= arduino:samd:arduino_zero_edbg
 
 # arduino.org
-ARDUINO=/Applications/Arduino.org.app/Contents/MacOS/Arduino
+#ARDUINO=/Applications/Arduino.org.app/Contents/MacOS/Arduino
 
 # DBG port .org
-BOARD ?= arduino:samd:arduino_zero_pro_bl_dbg
+#BOARD ?= arduino:samd:arduino_zero_pro_bl_dbg
 PORT ?= /dev/tty.usbmodem1412
 
 # USB port .org
