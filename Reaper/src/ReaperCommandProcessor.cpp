@@ -46,7 +46,13 @@ boolean ReaperCommandProcessor::processCommandLine() {
     }
 
     else if (strcmp(cmd, "ls") == 0) {
-      _reaper->listFiles();
+      char *filename = strtok(NULL, "");
+      if (filename != NULL) {
+        _reaper->listFile(filename);
+      }
+      else {
+        _reaper->listFiles();
+      }
     }
 
     else if (strcmp(cmd, "echo") == 0) {

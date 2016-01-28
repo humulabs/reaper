@@ -12,6 +12,7 @@ class Reaper {
     Reaper(Stream& stream, int chipSelect);
     void init();
     void listFiles();
+	void listFile(char *filename);
     void sendFile(char *filename);
 
   private:
