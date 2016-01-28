@@ -22,14 +22,14 @@ while port is None:
 print('connected\n')
 data = []
 
-dot = 10 * 1024
+dot = 100 * 1024
 print('reading data, printing a dot "." every {} bytes'.format(dot))
 start_time = timeit.default_timer()
 
 elapsed = None
 while True:
     try:
-        inData = port.read(size=1024)
+        inData = port.read(size=16384)
         elapsed = timeit.default_timer() - start_time
         data += inData
         if len(data) % 10 * 1024 == 0:
