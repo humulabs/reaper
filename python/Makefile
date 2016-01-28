@@ -2,7 +2,7 @@ VERSION = 1.0.0-dev
 NAME = sdreaper
 
 build: clean
-	python setup.py sdist bdist_wheel
+	python setup.py -q sdist bdist_wheel
 
 clean:
 	$(RM) build dist *.egg-info .coverage htmlcov
@@ -12,7 +12,10 @@ very-clean: clean
 	find . -name '*.pyc' | xargs rm -f
 
 install: build
-	pip install dist/*.tar.gz
+	pip -qq install dist/*.tar.gz
+
+uninstall:
+	pip -qq uninstall -y sdreaper || echo 'not installed'
 
 install-dev:
 	pip install \
@@ -23,4 +26,4 @@ test:
 	pep8 setup.py sdreaper
 	py.test
 
-.PHONY: build clean very-clean install install-db test
+.PHONY: build clean very-clean uninstall install install-dev test

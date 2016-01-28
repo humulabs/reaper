@@ -1,29 +1,22 @@
-# Running File Transcer test
-
-- adjust file name and baud in FileTransfer.ino
-- upload FileTransfer sketch and run it
-- adjust baud in python test program `serial-xmodem.py`
-
-run:
-
-```
-python serial-xmodem.py /dev/tty.usbmodem1421
-```
-
 # Reaper
 
-Arduino library and command line utility to download and delete SD card files.
-Currently tested on Arduino SAMD boards.
+Arduino library and python utility to transfer files off an SD card using a
+Serial port. The main use case is recovering sensor data from a sealed data
+logger that does not have wifi or easy access  to the SD card itself.
 
-## Running
-
+## Install
+1. install Arduino DIDE 1.6.7
 1. install SdFat-beta Arduino library
 1. install Reaper Arduino library
-1. pip install pyserial
+1. make install
+
+## Loading Firmwmare
+
 1. adjust port and paths to Arduino in Makefile
+1. run make
 
 ```bash
-make
+make compile
 ```
 
 The `SKETCH_DIR` and `SKETCH` env vars tell make where to find sketches and what
@@ -33,10 +26,26 @@ sketch to use. For example to build a sketch in the sketches dir:
 SKETCH_DIR=sketches SKETCH=bench make compile
 ```
 
-## serial-test.py
+# Running
 
-Run it with `make run`. It will wait for serial port to be available so you can
-run `serial-test` before resetting the Arduino.
+### list files on SD card
+sdreaper -p /dev/tty.usbmodem1421 'ls'
+
+### copy file from SD card
+sdreaper -p /dev/tty.usbmodem1421 'cp small.dat'
+
+
+# Sample test data
+
+Mount SD card on Mac to copy sample files.
+
+```
+cd sample_data
+SD_CARD=/Volumes/YOUR-CARD make
+```
+
+Empty Mac Trash and eject from finder. Not strictly necessary but if without
+these steps the annoying .Spotlightxxx files may not get removed from SD card.
 
 ## sketches
 

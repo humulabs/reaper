@@ -26,7 +26,7 @@ build_dir:
 	@mkdir -p build
 
 install:
-	$(MAKE) -C python clean install
+	$(MAKE) -C python clean uninstall install
 
 clean:
 	$(RM) build

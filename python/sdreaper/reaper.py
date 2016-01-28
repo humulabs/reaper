@@ -41,7 +41,7 @@ class Reaper(object):
         print('\nconnected to {} at {} baud.'.format(self.port, self.baud))
         time.sleep(.1)
 
-    def read(self, printChars=True, timeout=None):
+    def read(self, printChars=True, timeout=None, stringify=False):
         """
         Read until EOT and return as bytes read, not including EOT. If
         printChars is True then print each character as it is read.
@@ -49,16 +49,22 @@ class Reaper(object):
         data = []
         t1 = time.time()
         t2 = 0
+
         while True:
             bytesRead = self.conn.read(size=1)
             if not bytesRead or bytesRead[0] == EOT:
-                return data
+                break
             t2 = time.time()
             if timeout is not None and t2 - t1 > timeout:
-                return data
+                break
             if printChars:
                 print(chr(bytesRead[0]), end='', flush=True)
             data.append(bytesRead[0])
+
+        if stringify:
+            return ''.join([chr(b) for b in data])
+        else:
+            return data
 
     def sync(self):
         while True:
@@ -81,11 +87,21 @@ class Reaper(object):
         parts = command.split()
         verb = parts[0]
         if verb == 'cp':
-            path = parts[1].split('/')
-            filename = os.path.join('.', *path)
+
+            # get file size
+            filename = parts[1]
+            self.send_command('ls {}'.format(filename))
+            file_info = self.read(stringify=True, printChars=False)
+            size = int(file_info.split('\t')[1])
+
+            # receive file
+            path = filename.split('/')
+            local_filename = os.path.join('.', *path)
             self.send_command(command)
-            size = self.receiveFile(filename)
+            self.receiveFile(local_filename, size)
+
             print('received {}, size={}'.format(filename, size))
+
         else:
             self.send_command(command)
             return self.command_response()
@@ -103,7 +119,7 @@ class Reaper(object):
     def command_response(self):
         return self.read(printChars=True)
 
-    def receiveFile(self, filename):
+    def receiveFile(self, filename, size):
         def getc(size, timeout=1):
             self.conn.timeout = timeout
             data = self.conn.read(size)
@@ -115,9 +131,7 @@ class Reaper(object):
             return self.conn.write(data)
 
         xm = XMODEM1k(getc, putc)
-
-        # TODO: remove padding
         with open(filename, 'wb+') as f:
-            size = xm.recv(f)
+            xm.recv(f)
+            f.truncate(size)
             self.conn.timeout = self.timeout
-            return size
