@@ -6,17 +6,18 @@ Usage: sdreaper [options] [<command>...]
 
 Examples:
     # connect and print serial output
-    sdreaper -p /dev/tty.usbmodem1421 -b 9600
+    sdreaper -p /dev/tty.usbmodem1421
 
     # run a single command
-    sdreaper -p /dev/tty.usbmodem1421 -b 9600 list
+    sdreaper -p /dev/tty.usbmodem1421 list
 
     # run a list of commands
-    sdreaper -p /dev/tty.usbmodem1421 -b 9600 list list exit
+    sdreaper -p /dev/tty.usbmodem1421 list list exit
 
 Options:
   -p PORT --port=PORT        serial port to use
-  -b BAUD --baud=BAUD        baud rate
+  -b BAUD --baud=BAUD        baud rate, ignored if port is SerialUSB on
+                             Arduino [default: 9600]
   -h --help                  show help
   --version                  show version
 
@@ -29,6 +30,11 @@ will wait until the serial port is ready.
 import sys
 from docopt import docopt
 from sdreaper.reaper import Reaper
+
+import logging
+
+logging.basicConfig(format='%(levelname)-5s %(message)s',
+                    level=logging.INFO)
 
 
 def main():

@@ -36,12 +36,16 @@ boolean ReaperCommandProcessor::processCommandLine() {
       return false;
     }
 
-    else if (strcmp(cmd, "del") == 0) {
-      _stream->print("del ");
+    else if (strcmp(cmd, "rm") == 0) {
+      _stream->print("rm ");
       _stream->println(strtok(NULL, ""));
     }
 
-    else if (strcmp(cmd, "list") == 0) {
+    else if (strcmp(cmd, "cp") == 0) {
+      _reaper->sendFile(strtok(NULL, ""));
+    }
+
+    else if (strcmp(cmd, "ls") == 0) {
       _reaper->listFiles();
     }
 

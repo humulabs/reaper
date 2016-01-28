@@ -25,6 +25,9 @@ go: upload run
 build_dir:
 	@mkdir -p build
 
+install:
+	$(MAKE) -C python clean install
+
 clean:
 	$(RM) build
 
@@ -43,4 +46,4 @@ upload: build_dir
 run:
 	python python/sdreaper/main.py -p $(PORT) -b $(BAUD)
 
-.PHONY: go compile upload run doc build_dir
+.PHONY: go compile upload run doc build_dir install

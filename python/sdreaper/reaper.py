@@ -1,10 +1,19 @@
 import time
+import os
 import serial
 from serial.serialutil import SerialException
+from xmodem import XMODEM1k
 
-# control codes
+
+# ASCII Control Codes
+# -------------------
+
+# terminates command output send from board
 EOT = 0x04
+
+# used to sync communication, board replies with SYN when it receives one
 SYN = 0x16
+
 
 class Reaper(object):
     def __init__(self, port=None, baud=None, timeout=0.5):
@@ -55,21 +64,33 @@ class Reaper(object):
         while True:
             self.conn.write([SYN])
             time.sleep(.01)
-            # print('*', end='', flush=True)
             response = self.read(timeout=1)
             if response and response[0] == SYN:
-                # print('SYN\n')
                 return
+            elif response:
+                print(response, flush=True)
 
-    def commands(self, commands, printChars=True):
+    def commands(self, commands):
         self.read(timeout=3)
         results = []
         for cmd in commands:
             results.append(self.command(cmd))
         return results
 
-    def command(self, command, printChars=True):
-        # print('sending {}\n'.format(command))
+    def command(self, command):
+        parts = command.split()
+        verb = parts[0]
+        if verb == 'cp':
+            path = parts[1].split('/')
+            filename = os.path.join('.', *path)
+            self.send_command(command)
+            size = self.receiveFile(filename)
+            print('received {}, size={}'.format(filename, size))
+        else:
+            self.send_command(command)
+            return self.command_response()
+
+    def send_command(self, command):
         self.sync()
         time.sleep(.01)
         for c in command.rstrip('\n'):
@@ -78,18 +99,25 @@ class Reaper(object):
         self.conn.write([ord('\n')])
         self.conn.flush()
         time.sleep(.01)
-        return self.read(printChars=printChars)
 
-    def receiveFile(self):
+    def command_response(self):
+        return self.read(printChars=True)
+
+    def receiveFile(self, filename):
         def getc(size, timeout=1):
+            self.conn.timeout = timeout
             data = self.conn.read(size)
+            if len(data) == 0:
+                data = None
             return data
 
         def putc(data, timeout=1):
             return self.conn.write(data)
 
-        from xmodem import XMODEM1k
         xm = XMODEM1k(getc, putc)
-        with open('foo.dat', 'wb+') as f:
-            xm.recv(f)
 
+        # TODO: remove padding
+        with open(filename, 'wb+') as f:
+            size = xm.recv(f)
+            self.conn.timeout = self.timeout
+            return size

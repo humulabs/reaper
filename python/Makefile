@@ -11,8 +11,8 @@ very-clean: clean
 	$(RM) .eggs .cache
 	find . -name '*.pyc' | xargs rm -f
 
-install:
-	python setup.py install
+install: build
+	pip install dist/*.tar.gz
 
 install-dev:
 	pip install \

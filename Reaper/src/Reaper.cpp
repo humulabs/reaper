@@ -5,7 +5,7 @@
  * @param stream stream to use for command output
  * @param chipSelect chip select pin for SD card
  */
-Reaper::Reaper(Stream& stream, int chipSelect) {
+Reaper::Reaper(Stream& stream, int chipSelect) : _xmodem(stream) {
   _stream = &stream;
   _chipSelect = chipSelect;
 }
@@ -71,4 +71,14 @@ void Reaper::listFiles() {
   root.open("/");
   _stream->println("path\tsize\tlast_modified");
   listDir(_stream, root, String());
+}
+
+/**
+ * Send file using xmodem-1k protocol.
+ *
+ * @param filename name of file to send, can include directories
+ */
+void Reaper::sendFile(char *filename) {
+  File file = _sd.open(filename);
+  _xmodem.send(&file);
 }
