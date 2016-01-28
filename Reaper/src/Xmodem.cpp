@@ -24,8 +24,6 @@ int Xmodem::send(File* file) {
   while (true) {
     int c = serialRead();
     if (c != -1) {
-      Serial.print("got 0x");
-      Serial.println(c, HEX);
       break;
     }
     delay(100);
@@ -53,7 +51,9 @@ int Xmodem::send(File* file) {
 /**
  * @internal
  *
- * Send the current packet over the serial port.
+ * Send the current packet over the serial port and handle response.
+ *
+ *  + ACK - r
  * @return -1 if error
  */
 int Xmodem::sendPacket() {
@@ -63,30 +63,21 @@ int Xmodem::sendPacket() {
   serialWrite(_packet, PACKET_SIZE);
   serialWrite((_crc >> 8) & 0xff);
   serialWrite(_crc & 0xff);
-  // Serial.println("block sent, waiting for ACK/NAK ");
 
   int c;
   while (true) {
     c = serialRead();
     if (c == NAK) {
-      // Serial.println("got NAK, resending");
       delay(5);
       return sendPacket();
     }
     else if (c == ACK) {
-      // Serial.println("got ACK, continuing");
       _packetNumber++;
       return 0;
     }
     else if (c == CAN) {
-      // Serial.println("got CAN, stopping");
       return -1;
     }
-    if (c != -1) {
-      // Serial.print(" 0x");
-      // Serial.println(c, HEX);
-    }
-    // Serial.print('.');
     delay(500);
   }
 }
@@ -98,15 +89,10 @@ int Xmodem::sendPacket() {
  * @return the number of bytes read from the file
  */
 size_t Xmodem::readPacket() {
-  // TODO pad after instead
-  for (size_t i = 0; i < PACKET_SIZE; i++) {
+  size_t bytesRead = fileRead(_packet, PACKET_SIZE);
+  for (size_t i = bytesRead; i < PACKET_SIZE; i++) {
     _packet[i] = PAD_CHAR;
   }
-
-  size_t bytesRead = fileRead(_packet, PACKET_SIZE);
-  // for (size_t i = bytesRead; i < PACKET_SIZE; i++) {
-  //   _packet[i] = PAD_CHAR;
-  // }
 
   _crc = crc_init();
   _crc = crc_update(_crc, _packet, PACKET_SIZE);
@@ -172,8 +158,6 @@ size_t Xmodem::serialWrite(uint8_t *buffer, size_t count) {
  */
 int Xmodem::serialWrite(uint8_t c) {
 #ifdef ARDUINO
-  // Serial.print("write: ");
-  // Serial.println(c, HEX);
   return _serial->write(c);
 #else
   return write(_serial, &c, 1);
@@ -189,14 +173,10 @@ int Xmodem::serialWrite(uint8_t c) {
  */
 int Xmodem::serialRead() {
 #ifdef ARDUINO
-  int c = _serial->read();
-  // Serial.print("read: ");
-  // Serial.println(c, HEX);
-  return c;
+  return _serial->read();
 #else
   uint8_t c;
   size_t bytesRead = read(_serial, &c, 1);
-  fprintf(stderr, "read: 0x%02x\n", c);
   if (bytesRead == 0) {
     return -1;
   }
