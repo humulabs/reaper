@@ -78,7 +78,6 @@ int Xmodem::sendPacket() {
     else if (c == CAN) {
       return -1;
     }
-    delay(500);
   }
 }
 
