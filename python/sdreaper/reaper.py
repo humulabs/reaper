@@ -1,5 +1,7 @@
 import time
+import timeit
 import os
+import io
 import serial
 from serial.serialutil import SerialException
 from xmodem import XMODEM1k
@@ -132,6 +134,34 @@ class Reaper(object):
 
         xm = XMODEM1k(getc, putc)
         with open(filename, 'wb+') as f:
-            xm.recv(f)
+            stream = StreamWriter(f)
+            xm.recv(stream)
+            stream.report()
             f.truncate(size)
             self.conn.timeout = self.timeout
+
+
+class StreamWriter(object):
+    def __init__(self, writer):
+        self._w = writer
+        self._bytesWritten = 0
+        self._start_time = timeit.default_timer()
+        self._latest_time = self._start_time
+
+    @property
+    def bytesWritten(self):
+        return self._bytesWritten
+
+    def write(self, b):
+        count = self._w.write(b)
+        self._latest_time = timeit.default_timer()
+        self._bytesWritten += count
+        # self._w.flush()
+        print('.', end='', flush=True)
+        return count
+
+    def report(self):
+        elapsed = self._latest_time - self._start_time
+        rate =  round(float(self._bytesWritten) / 1000 / elapsed, 1)
+        print('received {} bytes in {} seconds, rate: {} KB/s'.format(
+              self._bytesWritten, round(elapsed, 2), rate))
