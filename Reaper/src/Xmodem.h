@@ -32,19 +32,26 @@ class Xmodem {
 
   private:
     static const size_t PACKET_SIZE = 1024;
+    static const unsigned long SEND_TIMEOUT = 3000;
+
     Stream *_serial;
     File *_file;
     uint8_t _packetNumber;
     uint8_t _packet[PACKET_SIZE];
     crc_t _crc;
+    unsigned long _timer;
 
     size_t readPacket();
     int sendPacket();
-
     int serialWrite(uint8_t c);
     size_t serialWrite(uint8_t *buffer, size_t count);
     int serialRead();
     size_t fileRead(uint8_t *buffer, size_t count);
+
+    inline void resetTimer() {
+      _timer = millis();
+    }
+
 };
 
 #ifndef ARDUINO

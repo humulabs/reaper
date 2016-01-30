@@ -24,6 +24,7 @@ int Xmodem::send(File* file) {
   while (true) {
     int c = serialRead();
     if (c != -1) {
+      resetTimer();
       break;
     }
     delay(100);
@@ -32,6 +33,7 @@ int Xmodem::send(File* file) {
   int status = 0;
   while (true) {
     size_t bytesRead = readPacket();
+    resetTimer();
     if (bytesRead > 0) {
       status = sendPacket();
       if (status < 0) {
@@ -56,7 +58,7 @@ int Xmodem::send(File* file) {
  *  + ACK - advance packet counter and return
  *  + CAN - return
  *
- * @return 0 if ACK-ed or NAK-ed, -1 if CAN-ed
+ * @return 0 if ACK-ed or NAK-ed, -1 if CAN-ed, -2 if timed out
  */
 int Xmodem::sendPacket() {
   serialWrite(STX);
@@ -79,6 +81,10 @@ int Xmodem::sendPacket() {
     }
     else if (c == CAN) {
       return -1;
+    }
+    else if (millis() - _timer > SEND_TIMEOUT) {
+      Serial.println("receiver timed out");
+      return -2;
     }
   }
 }
