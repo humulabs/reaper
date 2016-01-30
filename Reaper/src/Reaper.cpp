@@ -16,13 +16,13 @@ Reaper::Reaper(Stream& stream, int chipSelect) : _xmodem(stream) {
 void Reaper::init() {
   if (!_sd.begin(_chipSelect, SPI_FULL_SPEED)) {
     if (!_sd.begin(_chipSelect, SPI_HALF_SPEED)) {
-      _stream->println(F("Unable to talk to SD card"));
+      Serial.println(F("Unable to talk to SD card"));
       return;
     }
-    _stream->println(F("Connected to SD card at half speed"));
+    Serial.println(F("Connected to SD card at half speed"));
   }
   else {
-    _stream->println(F("Connected to SD card at full speed"));
+    Serial.println(F("Connected to SD card at full speed"));
   }
 }
 
