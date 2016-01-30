@@ -43,8 +43,7 @@ int Xmodem::send(File* file) {
     }
   }
   serialWrite(EOT);
-  delay(1);
-  serialRead();
+  while (serialRead() == -1);
   return status;
 }
 
