@@ -52,8 +52,11 @@ int Xmodem::send(File* file) {
  *
  * Send the current packet over the serial port and handle response.
  *
- *  + ACK - r
- * @return -1 if error
+ *  + NAK - resend packet
+ *  + ACK - advance packet counter and return
+ *  + CAN - return
+ *
+ * @return 0 if ACK-ed or NAK-ed, -1 if CAN-ed
  */
 int Xmodem::sendPacket() {
   serialWrite(STX);
@@ -68,7 +71,7 @@ int Xmodem::sendPacket() {
     c = serialRead();
     if (c == NAK) {
       delay(5);
-      return sendPacket();
+      return 0;
     }
     else if (c == ACK) {
       _packetNumber++;
