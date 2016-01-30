@@ -5,9 +5,13 @@
  *
  * @param serial port to use
  */
-Xmodem::Xmodem(Stream& serial) {
+Xmodem::Xmodem(Stream& serial, int led) {
 #ifdef ARDUINO
   _serial = &serial;
+  _led = led;
+  if (_led > -1) {
+    pinMode(_led, OUTPUT);
+  }
 #else
   _serial = *serial;
 #endif // ifdef ARDUINO
@@ -20,6 +24,7 @@ Xmodem::Xmodem(Stream& serial) {
 int Xmodem::send(File* file) {
   _file = file;
   _packetNumber = 1;
+  beginLed();
 
   while (true) {
     int c = serialRead();
@@ -36,6 +41,9 @@ int Xmodem::send(File* file) {
     resetTimer();
     if (bytesRead > 0) {
       status = sendPacket();
+      if (_packetNumber % 20 == 0) {
+        toggleLed();
+      }
       if (status < 0) {
         break;
       }
@@ -46,6 +54,7 @@ int Xmodem::send(File* file) {
   }
   serialWrite(EOT);
   while (serialRead() == -1);
+  endLed();
   return status;
 }
 
