@@ -127,8 +127,6 @@ size_t Xmodem::fileRead(uint8_t *buffer, size_t count) {
  */
 size_t Xmodem::serialWrite(uint8_t *buffer, size_t count) {
 #ifdef ARDUINO
-  // Serial.println("writing block");
-
   uint8_t *current = buffer;
   int remaining = count;
   int batchSize = 128;
