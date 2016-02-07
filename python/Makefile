@@ -12,7 +12,7 @@ very-clean: clean
 	find . -name '*.pyc' | xargs rm -f
 
 install: build
-	pip -qq install dist/*.tar.gz
+	pip -qq install --upgrade dist/*.tar.gz
 
 uninstall:
 	pip -qq uninstall -y sdreaper || echo 'not installed'

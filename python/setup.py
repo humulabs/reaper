@@ -19,7 +19,7 @@ from setuptools import setup, find_packages
 setup(
     name='sdreaper',
     version='1.0.1-dev',
-    description='CLI for talking to Arduino Reaper library',
+    description='CLI and curses UI for talking to Arduino Reaper library',
     long_description=__doc__,
     url='https://github.com/humulabs/reaper/blob/master/README.md',
     author='Michael Keirnan',
@@ -29,6 +29,7 @@ setup(
     install_requires=[
         'pyserial',
         'docopt',
+        'urwid_timed_progress',
     ],
     entry_points={
         'console_scripts': ['sdreaper=sdreaper.main:main'],

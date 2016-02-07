@@ -17,3 +17,4 @@ sdist/
 .cache
 nosetests.xml
 coverage.xml
+/*.log

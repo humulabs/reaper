@@ -13,8 +13,6 @@ PORT ?= /dev/tty.usbmodem1412
 # BOARD ?= arduino:samd:arduino_zero_pro_bl
 # PORT ?= /dev/tty.usbmodem1421
 
-BAUD ?= 9600
-
 SKETCH_DIR ?= Reaper/examples
 SKETCH ?= CommandLoop
 
@@ -44,6 +42,6 @@ upload: build_dir
 	           --upload $(realpath $(SKETCH_DIR)/$(SKETCH)/$(SKETCH).ino)
 
 run:
-	python python/sdreaper/main.py -p $(PORT) -b $(BAUD)
+	python python/sdreaper/main.py -p $(PORT) --monitor
 
 .PHONY: go compile upload run doc build_dir install
