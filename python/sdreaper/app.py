@@ -9,19 +9,27 @@ class App(object):
         ('complete', 'white', 'dark magenta'),
     ]
 
+    # Using SI units: https://en.wikipedia.org/wiki/Kilobyte
+    units = [
+        ('B', 1),
+        ('kB', 1000),
+        ('MB', 1000000),
+        ('GB', 1000000000),
+    ]
+
     def __init__(self, reaper):
         self.reaper = reaper
         self.file_progress = TimedProgressBar('normal',
                                               'complete',
                                               label='Current File',
                                               label_width=13,
-                                              units='Bytes')
+                                              units=App.units)
 
         self.overall_progress = TimedProgressBar('normal',
                                                  'complete',
                                                  label='Overall',
                                                  label_width=13,
-                                                 units='Bytes')
+                                                 units=App.units)
 
         self._status = uw.Text('-ready-')
         self.debug_message = uw.Text('')

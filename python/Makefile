@@ -22,8 +22,14 @@ install-dev:
 	    pep8 \
 	    mock
 
+test-release: build test
+	twine upload -r pypitest dist/*
+
+release: build test
+	twine upload dist/*
+
 test:
 	pep8 setup.py sdreaper
 	py.test
 
-.PHONY: build clean very-clean uninstall install install-dev test
+.PHONY: build clean very-clean uninstall install install-dev test-release release test
