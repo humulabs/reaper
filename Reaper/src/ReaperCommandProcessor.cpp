@@ -36,6 +36,10 @@ boolean ReaperCommandProcessor::processCommandLine() {
       return false;
     }
 
+    else if (strcmp(cmd, "info") == 0) {
+      _reaper->info();
+    }
+
     else if (strcmp(cmd, "rm") == 0) {
       _stream->print("rm ");
       _stream->println(strtok(NULL, ""));

@@ -97,7 +97,6 @@ class Reaper(object):
         parts = command.split()
         verb = parts[0]
         if verb == 'cp':
-
             # get file size
             filename = parts[1]
             self.send_command('ls {}'.format(filename))
@@ -117,7 +116,9 @@ class Reaper(object):
             self.echo = True
 
             print('received {}, size={}'.format(filename, size))
-
+        elif verb == 'info':
+            self.send_command(command)
+            return self.read()
         else:
             self.send_command(command)
             return self.read()
