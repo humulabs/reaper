@@ -69,6 +69,7 @@ void printFileDetails(Stream* stream, File file, String path) {
  *   + **sd_size** - card capacity in 512 byte blocks, printed as decimal integer
  */
 void Reaper::info() {
+  char buf[33];
 
   // MCU chip id: http://tinyurl.com/atmel-samd-chip-id
   #ifdef ARDUINO_ARCH_SAMD
@@ -83,7 +84,6 @@ void Reaper::info() {
   val4 = *ptr;
 
   _stream->print("samd_id\t0x");
-  char buf[33];
   sprintf(buf, "%8x%8x%8x%8x", val1, val2, val3, val4);
   _stream->println(buf);
   #endif ARDUINO_ARCH_SAMD
@@ -94,7 +94,8 @@ void Reaper::info() {
     return;
   }
   _stream->print(F("sd_mid\t0x"));
-  _stream->println(cid.mid, HEX);
+  sprintf(buf, "%02x", cid.mid);
+  _stream->println(buf);
 
   _stream->print(F("sd_oid\t"));
   _stream->print(cid.oid[0]);
@@ -112,9 +113,8 @@ void Reaper::info() {
   _stream->println(int(cid.prv_m));
 
   _stream->print(F("sd_psn\t0x"));
-  char psn_buf[5];
-  sprintf(psn_buf, "%4x", cid.psn);
-  _stream->println(psn_buf);
+  sprintf(buf, "%4x", cid.psn);
+  _stream->println(buf);
 
   _stream->print(F("sd_mdt\t"));
   _stream->print(cid.mdt_month);

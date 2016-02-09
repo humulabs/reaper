@@ -123,6 +123,14 @@ class Reaper(object):
             self.send_command(command)
             return self.read()
 
+    def info(self):
+        self.send_command('info')
+        fields = {}
+        for line in self.read(stringify=True).splitlines():
+            name, value = line.split('\t')
+            fields[name] = value
+        return fields
+
     def cp(self, sd_filename, local_filename, size, progress_fun=None):
         self.send_command('cp {}'.format(sd_filename))
         self.receiveFile(local_filename, size, progress_fun)
