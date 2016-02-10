@@ -101,7 +101,7 @@ class Reaper(object):
             filename = parts[1]
             self.send_command('ls {}'.format(filename))
             file_info = self.read(stringify=True)
-            size = int(file_info.split('\t')[1])
+            size = int(file_info.split()[2])
 
             # receive file
             path = filename.split('/')
@@ -140,12 +140,24 @@ class Reaper(object):
         self.send_command('ls')
         result = []
         listing = self.read(stringify=True)
-        for entry in listing.splitlines()[1:]:
-            fields = entry.split('\t')
-            result.append(dict(
-                name=fields[0],
-                size=int(fields[1]),
-                last_modified=fields[2]))
+
+        current_dir = []
+        prev_level = 0
+        for line in listing.splitlines()[1:]:
+            level = int((len(line) - len(line.lstrip())) / 2)
+            date, time, size, name = line.split()
+
+            if name.endswith('/'):
+                current_dir[level:] = [name]
+            else:
+                current_dir = current_dir[0:level]
+                result.append(dict(
+                    name=''.join(current_dir + [name]),
+                    size=int(size),
+                    last_modified=' '.join([date, time])))
+
+            name = current_dir
+            prev_level = level
         return result
 
     def send_command(self, command):

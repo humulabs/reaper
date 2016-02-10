@@ -27,24 +27,6 @@ void Reaper::init() {
 }
 
 /**
- * @internal
- *
- * Print file detail line to stream.
- *
- * @param stream     stream to use
- * @param file       file entry
- * @param path       full path to file
- */
-void printFileDetails(Stream* stream, File file, String path) {
-  stream->print(path);
-  stream->print('\t');
-  stream->print(file.fileSize(), DEC);
-  stream->print('\t');
-  file.printModifyDateTime(stream);
-  stream->println();
-}
-
-/**
  * Print device information. Device information consists of
  * named fields printed one per line. Each line is of the form:
  *
@@ -126,53 +108,55 @@ void Reaper::info() {
 }
 
 /**
- * @internal
+ * List all files and directories on the SD card. Each file or directory is
+ * printed on a single line of the form:
  *
- * listFiles helper
+ *     <indent>DATE<sp>TIME<sp>SIZE<sp>NAME
  *
- * @param stream     stream to use
- * @param dir        directory entry to list
- * @param parentPath path of parent directory for printing
+ * where:
+ *   - <indent> 2 spaces * the current directory level
+ *   - <sp> 1 or more spaces
+ *   - DATE: file last modified date
+ *   - TIME: file last modified time
+ *   - SIZE: file size
+ *   - NAME: file name (not including parent dirs), if NAME is
+ *           a directory it ends with a slash "/"
+ *
+ * For example the listing:
+ *
+ *     2016-02-09 13:43:42        513 small.dat
+ *     2016-01-28 14:41:24          0 x/
+ *       2016-02-09 13:43:42         42 z.dat
+ *
+ *  Contains two files `small.data` and `x/z.dat` and one directory `x`.
  */
-void listDir(Stream* stream, File dir, String parentPath) {
-  File entry = dir.openNextFile();
-  while (entry) {
-    char name[13];
-    entry.getName(name, sizeof(name));
-    String path = parentPath + "/" + name;
-
-    if (entry.isDirectory()) {
-      listDir(stream, entry, path);
-    }
-    else {
-      printFileDetails(stream, entry, path);
-    }
-
-    entry.close();
-    entry = dir.openNextFile();
-  }
+void Reaper::listFiles() {
+  _sd.ls(_stream, "/", LS_A | LS_DATE | LS_SIZE | LS_R);
 }
 
 /**
- * List all files on SD card. All files in all directories on the card are
- * included in the listing. Directory entries themselves are not included.
- * The response includes a header line and one line for each file found
- * on the card. The fields in each line are separated by `\t` and the lines
- * are separated by `\r\n`.
+ * List details for a file. Output is a single line of the form:
  *
- * TODO: deal with large listings or deep directory structures which
- * currently exhaust memory
+ *     DATE<sp>TIME<sp>SIZE<sp>filename
+ *
+ * where:
+ *   - <sp> 1 or more spaces
+ *   - DATE: file last modified date
+ *   - TIME: file last modified time
+ *   - SIZE: file size
+ *   - NAME: full filename including any parent dirs
+ *
+ * @param filename full path to file, using slashes "/" to separate directories
  */
-void Reaper::listFiles() {
-  File root;
-  root.open("/");
-  _stream->println("path\tsize\tlast_modified");
-  listDir(_stream, root, String());
-}
-
 void Reaper::listFile(char *filename) {
   File file = _sd.open(filename);
-  printFileDetails(_stream, file, String(filename));
+
+  file.printModifyDateTime(_stream);
+  _stream->write(' ');
+  file.printFileSize(_stream);
+  _stream->write(' ');
+  _stream->println(filename);
+
   file.close();
 }
 
