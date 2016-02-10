@@ -37,8 +37,10 @@ class App(object):
 
         info = self.reaper.info()
         self.device_id = info['samd_id'][2:]
+        self.device_name = self.reaper.get_device_name(self.device_id)
 
         info_text = [
+            'Device Name: {}'.format(self.device_name),
             'Device Id: {}'.format(self.device_id),
             'SD Info: {} {} {} {} {}'.format(
                 info['sd_mid'][2:],

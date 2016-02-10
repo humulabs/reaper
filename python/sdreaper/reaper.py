@@ -24,6 +24,11 @@ class Reaper(object):
         self.timeout = timeout
         self.conn = None
         self.echo = echo
+        self._devices_by_id = None
+        self._devices_by_name = {}
+
+        if not os.path.exists(self.data_dir):
+            os.makedirs(self.data_dir)
 
     def pr(self, s, end='\n', flush=False):
         if self.echo:
@@ -184,6 +189,68 @@ class Reaper(object):
             f.truncate(size)
             self.conn.timeout = self.timeout
         return report
+
+    def set_device_name(self, name, device_id):
+        if self._devices_by_id is None:
+            self._read_devices()
+        if self._devices_by_name.get(name):
+            return False
+
+        self._devices_by_id[device_id] = name
+        self._devices_by_name[name] = device_id
+        self._write_devices()
+        return True
+
+    def get_device_name(self, device_id):
+        if self._devices_by_id is None:
+            self._read_devices()
+        name = self._devices_by_id.get(device_id)
+        if name is None:
+            name = 'tag-{}'.format(device_id[-5:])
+            self.set_device_name(name, device_id)
+        return name
+
+    @property
+    def device_file(self):
+        return os.path.join(self.data_dir, 'devices.txt')
+
+    def _read_devices(self):
+        self._devices_by_name = {}
+        pat = '^(?!#)(.+)=\\s(.+)'
+        try:
+            with open(self.device_file, 'r') as f:
+                for line in f:
+                    if not line.startswith('#'):
+                        try:
+                            name, code = line.rsplit('=', 1)
+                            self._devices_by_name[name.strip()] = code.strip()
+
+                        except Exception as e:
+                            pass
+            self._devices_by_id = {
+                code: name for name, code in self._devices_by_name.items()
+            }
+
+        except:
+            self._devices_by_id = {}
+
+
+    def _write_devices(self):
+        header = '\n'.join([
+            '# Names for devices based on their device ids, format:',
+            '#',
+            '#  name = code',
+            '#',
+            '# name is space trimmed, but can contain spaces',
+            '# Blank lines are ignored. Codes and names should be unique.',
+            '',
+        ])
+
+        with open(self.device_file, 'w+') as f:
+            print(header, file=f)
+            for code, name in self._devices_by_id.items():
+                print('{0:20s} = {1}'.format(name, code), file=f)
+
 
 class StreamWriter(object):
     def __init__(self, writer, progress_fun=None):
