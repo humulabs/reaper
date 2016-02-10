@@ -18,9 +18,9 @@ SYN = 0x16
 
 
 class Reaper(object):
-    def __init__(self, port=None, baud=None, timeout=0.5, echo=True):
+    def __init__(self, port=None, data_dir='data', timeout=0.5, echo=True):
         self.port = port
-        self.baud = baud
+        self.data_dir = data_dir
         self.timeout = timeout
         self.conn = None
         self.echo = echo
@@ -31,21 +31,16 @@ class Reaper(object):
 
     def connect(self):
         """Connect to serial port, waiting until it is ready"""
-        self.pr('connecting to {} at {} baud...'.format(self.port, self.baud))
+        self.pr('connecting to {} ...'.format(self.port))
 
         while self.conn is None:
             try:
-                self.conn = serial.Serial(port=self.port,
-                                          baudrate=self.baud,
-                                          bytesize=serial.EIGHTBITS,
-                                          parity=serial.PARITY_NONE,
-                                          stopbits=serial.STOPBITS_ONE,
-                                          timeout=self.timeout)
+                self.conn = serial.Serial(port=self.port, timeout=self.timeout)
             except SerialException as se:
                 time.sleep(1.0)
                 self.pr('.', end='.', flush=True)
 
-        self.pr('\nconnected to {} at {} baud.'.format(self.port, self.baud))
+        self.pr('\nconnected to {}'.format(self.port))
         time.sleep(.1)
 
     def read(self, timeout=None, stringify=False):

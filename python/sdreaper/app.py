@@ -103,7 +103,7 @@ class App(object):
                     self.overall_progress.add_progress(num_bytes)
                     self.loop.draw_screen()
 
-                data_dir = os.path.join('data', self.device_id)
+                data_dir = os.path.join(self.reaper.data_dir, self.device_id)
 
                 sd_filename = f['name'].lstrip('/')
                 local_filename = os.path.join(data_dir, sd_filename)

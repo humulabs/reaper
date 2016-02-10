@@ -5,30 +5,20 @@ Usage: sdreaper [options] [<command>...]
        sdreaper -h | --help | --version
 
 Examples:
-    # run interactively
-    sdreaper -p /dev/tty.usbmodem1421
+    # launch UI using default USB port
+    sdreaper
 
-    # connect and print serial output
-    sdreaper -p /dev/tty.usbmodem1421 --monitor
-
-    # run a single command
-    sdreaper -p /dev/tty.usbmodem1421 ls
-
-    # run multiple commands
-    sdreaper -p /dev/tty.usbmodem1421 ls ls
+    # launch UI with specified USB port
+    sdreaper -p COM6
 
 Options:
-  -p PORT --port=PORT        serial port to use
-  -b BAUD --baud=BAUD        baud rate, ignored if port is SerialUSB on
-                             Arduino [default: 9600]
-  --monitor                  monitor and print serial output
+  -p PORT --port=PORT        USB port to use [default: /dev/tty.usbmodem1421]
+  -d DATA --data=DATA        data directory to use [default: data]
+  --monitor                  monitor and print serial output (diagnostic use)
   -h --help                  show help
   --version                  show version
 
-Connect to Arduino Reaper on serial port, send the specified commands and
-print the results. If no commands are given then run as a read-only serial
-monitor. It is okay to run sdreaper before the Arduino is connected: sdreaper
-will wait until the serial port is ready.
+Interactive utility app to work with board running Arduino Reaper library.
 """
 
 import sys
@@ -45,7 +35,7 @@ logging.basicConfig(format='%(levelname)-5s %(message)s',
 def main():
     args = docopt(__doc__, version='sdreaper 1.0.1')
 
-    reaper = Reaper(port=args['--port'], baud=args['--baud'])
+    reaper = Reaper(port=args['--port'], data_dir=args['--data'])
     reaper.connect()
 
     commands = args['<command>']
