@@ -41,7 +41,7 @@ def main():
     commands = args['<command>']
     if args['--monitor']:
         while True:
-          reaper.read()
+            reaper.read()
     elif commands:
         reaper.commands(commands)
     else:

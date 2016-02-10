@@ -2,6 +2,7 @@ import os
 import urwid as uw
 from urwid_timed_progress import TimedProgressBar
 
+
 class App(object):
 
     palette = [
@@ -33,7 +34,6 @@ class App(object):
                                                  label_width=13,
                                                  units=App.units,
                                                  done=.001)
-
 
         info = self.reaper.info()
         self.device_id = info['samd_id'][2:]
@@ -126,6 +126,7 @@ class App(object):
     def debug(self, m):
         self.debug_message.set_text(m)
         self.loop.draw_screen()
+
 
 def increment_filename(filename):
     parts = filename.rsplit('-', 1)

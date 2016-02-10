@@ -234,7 +234,6 @@ class Reaper(object):
         except:
             self._devices_by_id = {}
 
-
     def _write_devices(self):
         header = '\n'.join([
             '# Names for devices based on their device ids, format:',
@@ -274,6 +273,6 @@ class StreamWriter(object):
 
     def report(self):
         elapsed = self._latest_time - self._start_time
-        rate =  round(float(self._bytes_written) / 1000 / elapsed, 1)
+        rate = round(float(self._bytes_written) / 1000 / elapsed, 1)
         return 'received {} bytes in {} seconds, rate: {} KB/s'.format(
-              self._bytes_written, round(elapsed, 2), rate)
+            self._bytes_written, round(elapsed, 2), rate)

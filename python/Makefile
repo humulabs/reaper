@@ -30,6 +30,5 @@ release: build test
 
 test:
 	pep8 setup.py sdreaper
-	py.test
 
 .PHONY: build clean very-clean uninstall install install-dev test-release release test
