@@ -27,7 +27,7 @@ install:
 	$(MAKE) -C python clean uninstall install
 
 clean:
-	$(RM) build
+	rm -fr build
 
 doc: build_dir
 	doxygen Reaper/.doxygen.conf

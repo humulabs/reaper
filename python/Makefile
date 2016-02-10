@@ -5,10 +5,10 @@ build: clean
 	python setup.py -q sdist bdist_wheel
 
 clean:
-	$(RM) build dist *.egg-info .coverage htmlcov
+	rm -fr build dist *.egg-info .coverage htmlcov
 
 very-clean: clean
-	$(RM) .eggs .cache
+	rm -fr .eggs .cache
 	find . -name '*.pyc' | xargs rm -f
 
 install: build
