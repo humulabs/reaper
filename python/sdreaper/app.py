@@ -37,10 +37,8 @@ class App(object):
 
         info = self.reaper.info()
         self.device_id = info['samd_id'][2:]
-        self.device_name = self.reaper.get_device_name(self.device_id)
 
         info_text = [
-            'Device Name: {}'.format(self.device_name),
             'Device Id: {}'.format(self.device_id),
             'SD Info: {} {} {} {} {}'.format(
                 info['sd_mid'][2:],
@@ -52,11 +50,47 @@ class App(object):
             'SD Size: {:.2f} GB'.format(float(info['sd_size']) * 512 / 1e9),
         ]
 
-        info_box = uw.LineBox(uw.Pile([uw.Text(t) for t in info_text]))
+        # Lookup device name, create a short one if not found
+        device_name = self.reaper.get_device_name(self.device_id)
+        if device_name is None:
+            device_name = 'tag-{}'.format(self.device_id[-5:])
+            self.reaper.set_device_name(device_name, self.device_id)
+
+        # Invoked when editing device name is complete
+        def device_name_handler(new_name):
+            device_id = self.reaper.get_device_id(new_name)
+
+            # name not changed
+            if device_id == self.device_id:
+                self.status('-ready-')
+                return True
+
+            # name not being used yet
+            if device_id is None:
+                self.reaper.set_device_name(new_name, self.device_id)
+                self.status('-ready-')
+                return True
+
+            # name already being used
+            else:
+                msg = ('Device Name "{}" already used for device "{}"\n' +
+                       'Please choose another name.').format(new_name,
+                                                             device_id)
+                self.status(msg)
+                return False
+
+        # device name edit field
+        self.device_name = edit_field('Device Name: ',
+                                      device_name,
+                                      device_name_handler)
+
+        info_box = uw.LineBox(uw.Pile(
+            [self.device_name] + [uw.Text(t) for t in info_text]))
         self._status = uw.Text('-ready-')
         self.debug_message = uw.Text('')
 
-        footer = uw.Text('r to run download | ESC or q to exit')
+        footer = uw.Text(
+            'r = run download | c = change device name | q  = exit')
         self.footer = uw.AttrWrap(footer, 'footer')
 
         progress = uw.Frame(uw.ListBox([info_box,
@@ -74,11 +108,14 @@ class App(object):
                             footer=self.footer)
 
         def keypress(key):
-            if key in ('q', 'Q', 'esc'):
+            if key in ('q', 'Q'):
                 raise uw.ExitMainLoop()
             elif key in ('r', 'R'):
                 self.download()
                 self.status('-ready-')
+            elif key in ('c', 'C'):
+                self.status('Enter new Device Name')
+                self.device_name.edit_mode()
 
         self.loop = uw.MainLoop(progress,
                                 App.palette,
@@ -126,6 +163,42 @@ class App(object):
     def debug(self, m):
         self.debug_message.set_text(m)
         self.loop.draw_screen()
+
+
+def edit_field(caption, edit_text, handler):
+    edit = uw.Edit(caption, edit_text)
+    ef = EditField(edit, handler)
+    return uw.BoxAdapter(ef, height=1)
+
+
+class EditField(uw.Filler):
+    def __init__(self, edit, handler):
+        super(EditField, self).__init__(edit)
+        self.edit_widget = edit
+        self.handler = handler
+        self.text_widget = uw.Text('')
+        self.value = self.edit_widget.edit_text
+        self.text_mode()
+
+    def edit_mode(self):
+        self.original_widget = self.edit_widget
+
+    def text_mode(self):
+        self.text_widget.set_text(self.edit_widget.caption + self.value)
+        self.original_widget = self.text_widget
+
+    def keypress(self, size, key):
+        if key == 'esc':
+            self.text_mode()
+            self.handler(self.value)
+
+        elif key == 'enter':
+            if self.edit_widget.edit_text != self.value:
+                if self.handler(self.edit_widget.edit_text):
+                    self.value = self.edit_widget.edit_text
+                    self.text_mode()
+        else:
+            return super(EditField, self).keypress(size, key)
 
 
 def increment_filename(filename):

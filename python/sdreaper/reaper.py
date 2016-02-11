@@ -204,11 +204,12 @@ class Reaper(object):
     def get_device_name(self, device_id):
         if self._devices_by_id is None:
             self._read_devices()
-        name = self._devices_by_id.get(device_id)
-        if name is None:
-            name = 'tag-{}'.format(device_id[-5:])
-            self.set_device_name(name, device_id)
-        return name
+        return self._devices_by_id.get(device_id)
+
+    def get_device_id(self, name):
+        if self._devices_by_id is None:
+            self._read_devices()
+        return self._devices_by_name.get(name)
 
     @property
     def device_file(self):
