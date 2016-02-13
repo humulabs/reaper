@@ -1,7 +1,9 @@
+sdreaper.log
 sample_data/files/100K.dat
 sample_data/files/16M.dat
 sample_data/files/4M.dat
 sample_data/files/1M.dat
+sample_data/files/500K.dat
 /*.sublime-*
 *.py[cod]
 build/
