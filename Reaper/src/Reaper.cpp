@@ -161,6 +161,14 @@ void Reaper::listFile(char *filename) {
 }
 
 /**
+ * Remove file.
+ * @param filename full path to file, using slashes "/" to separate directories
+ */
+void Reaper::rm(char *filename) {
+  _sd.remove(filename);
+}
+
+/**
  * Send file using xmodem-1k protocol.
  *
  * @param filename name of file to send, can include directories

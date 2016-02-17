@@ -14,6 +14,7 @@ class Reaper {
     void listFiles();
 	void listFile(char *filename);
     void sendFile(char *filename);
+    void rm(char *filename);
     void info();
 
   private:

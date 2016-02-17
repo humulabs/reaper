@@ -175,6 +175,9 @@ class App(object):
                                local_filename,
                                f['size'],
                                progress_fun)
+
+            # remove file
+            self.reaper.rm(f['name'])
             self.file_list = self.file_list[1:]
             self.update_file_count()
 

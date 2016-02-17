@@ -41,8 +41,7 @@ boolean ReaperCommandProcessor::processCommandLine() {
     }
 
     else if (strcmp(cmd, "rm") == 0) {
-      _stream->print("rm ");
-      _stream->println(strtok(NULL, ""));
+      _reaper->rm(strtok(NULL, ""));
     }
 
     else if (strcmp(cmd, "cp") == 0) {

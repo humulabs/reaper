@@ -131,6 +131,10 @@ class Reaper(object):
             fields[name] = value
         return fields
 
+    def rm(self, sd_filename):
+        self.send_command('rm {}'.format(sd_filename))
+        return self.read(stringify=True)
+
     def cp(self, sd_filename, local_filename, size, progress_fun=None):
         self.send_command('cp {}'.format(sd_filename))
         self.receiveFile(local_filename, size, progress_fun)
