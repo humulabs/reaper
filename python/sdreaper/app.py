@@ -1,4 +1,5 @@
 import os
+import locale
 import urwid as uw
 from urwid_timed_progress import TimedProgressBar
 
@@ -19,6 +20,8 @@ class App(object):
         ('GB', 1000000000),
     ]
 
+    locale.setlocale(locale.LC_ALL, '')
+
     def __init__(self, reaper):
         self.reaper = reaper
         self.file_progress = TimedProgressBar('normal',
@@ -37,6 +40,9 @@ class App(object):
 
         info = self.reaper.info()
         self.device_id = info['samd_id'][2:]
+        self.file_count = uw.Text('')
+        self.file_list = self.reaper.ls()
+        self.update_file_count()
 
         info_text = [
             'Device Id: {}'.format(self.device_id),
@@ -85,7 +91,9 @@ class App(object):
                                       device_name_handler)
 
         info_box = uw.LineBox(uw.Pile(
-            [self.device_name] + [uw.Text(t) for t in info_text]))
+            [self.device_name] +
+            [uw.Text(t) for t in info_text] +
+            [self.file_count]))
         self._status = uw.Text('-ready-')
         self.debug_message = uw.Text('')
 
@@ -120,18 +128,26 @@ class App(object):
         self.loop = uw.MainLoop(progress,
                                 App.palette,
                                 unhandled_input=keypress)
+
         self.loop.run()
 
     def status(self, msg):
         self._status.set_text(msg)
         self.loop.draw_screen()
 
+    def update_file_count(self):
+        if self.file_list is None:
+            t = 'n/a'
+        else:
+            t = locale.format('%d', len(self.file_list), grouping=True)
+        self.file_count.set_text('# of Files: {}'.format(t))
+
     def download(self):
-        self.status('listing files on SD card ...')
-        files = self.reaper.ls()
-        self.overall_progress.done = sum([f['size'] for f in files])
+        if self.file_list is None:
+            self.get_file_list()
+        self.overall_progress.done = sum([f['size'] for f in self.file_list])
         self.status('starting download ...')
-        for f in files:
+        for f in list(self.file_list):
             if f['size'] > 0:
                 self.file_progress.reset()
                 self.file_progress.done = f['size']
@@ -159,6 +175,8 @@ class App(object):
                                local_filename,
                                f['size'],
                                progress_fun)
+            self.file_list = self.file_list[1:]
+            self.update_file_count()
 
     def debug(self, m):
         self.debug_message.set_text(m)
