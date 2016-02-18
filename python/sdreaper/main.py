@@ -12,11 +12,13 @@ Examples:
     sdreaper -p COM6
 
 Options:
-  -p PORT --port=PORT        USB port to use [default: /dev/tty.usbmodem1421]
-  -d DATA --data=DATA        data directory to use [default: data]
-  --monitor                  monitor and print serial output (diagnostic use)
-  -h --help                  show help
-  --version                  show version
+  -p PORT --port=PORT      USB port to use [default: /dev/tty.usbmodem1421]
+  -d DATA --data=DATA      data directory to use [default: data]
+  --monitor                monitor and print serial output (diagnostic use)
+  --no-rm                  do not remove files after download, by default
+                           files are removed after they are downloaded
+  -h --help                show help
+  --version                show version
 
 Interactive utility app to work with board running Arduino Reaper library.
 """
@@ -46,7 +48,7 @@ def main():
         reaper.commands(commands)
     else:
         reaper.echo = False
-        App(reaper)
+        App(reaper, not args['--no-rm'])
 
 if __name__ == '__main__':
     sys.exit(main())

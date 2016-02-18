@@ -1,5 +1,6 @@
 import os
 import locale
+import datetime
 import urwid as uw
 from urwid_timed_progress import TimedProgressBar
 
@@ -22,7 +23,8 @@ class App(object):
 
     locale.setlocale(locale.LC_ALL, '')
 
-    def __init__(self, reaper):
+    def __init__(self, reaper, rm_after_download=True):
+        self.rm_after_download = rm_after_download
         self.reaper = reaper
         self.file_progress = TimedProgressBar('normal',
                                               'complete',
@@ -90,10 +92,17 @@ class App(object):
                                       device_name,
                                       device_name_handler)
 
-        info_box = uw.LineBox(uw.Pile(
+        info_left = uw.Pile(
             [self.device_name] +
             [uw.Text(t) for t in info_text] +
-            [self.file_count]))
+            [self.file_count])
+
+        self.clock = Clock('')
+
+        info_right = uw.Pile([uw.Padding(self.clock, align='right', width=13)])
+
+        info_box = uw.LineBox(uw.Columns([info_left, info_right]))
+
         self._status = uw.Text('-ready-')
         self.debug_message = uw.Text('')
 
@@ -101,19 +110,19 @@ class App(object):
             'r = run download | c = change device name | q  = exit')
         self.footer = uw.AttrWrap(footer, 'footer')
 
-        progress = uw.Frame(uw.ListBox([info_box,
-                                        uw.Divider(),
-                                        self.file_progress,
-                                        uw.Divider(),
-                                        uw.Divider(),
-                                        self.overall_progress,
-                                        uw.Divider(),
-                                        uw.Divider(),
-                                        self._status,
-                                        uw.Divider(),
-                                        self.debug_message,
-                                        ]),
-                            footer=self.footer)
+        main_view = uw.Frame(uw.ListBox([info_box,
+                                         uw.Divider(),
+                                         self.file_progress,
+                                         uw.Divider(),
+                                         uw.Divider(),
+                                         self.overall_progress,
+                                         uw.Divider(),
+                                         uw.Divider(),
+                                         self._status,
+                                         uw.Divider(),
+                                         self.debug_message,
+                                         ]),
+                             footer=self.footer)
 
         def keypress(key):
             if key in ('q', 'Q'):
@@ -125,14 +134,15 @@ class App(object):
                 self.status('Enter new Device Name')
                 self.device_name.edit_mode()
 
-        self.loop = uw.MainLoop(progress,
+        self.loop = uw.MainLoop(main_view,
                                 App.palette,
                                 unhandled_input=keypress)
-
+        self.loop.set_alarm_in(1, self.clock.refresh)
         self.loop.run()
 
     def status(self, msg):
         self._status.set_text(msg)
+        self.clock.refresh_once()
         self.loop.draw_screen()
 
     def update_file_count(self):
@@ -156,6 +166,7 @@ class App(object):
                 def progress_fun(num_bytes, _):
                     self.file_progress.add_progress(num_bytes)
                     self.overall_progress.add_progress(num_bytes)
+                    self.clock.refresh_once()
                     self.loop.draw_screen()
 
                 data_dir = os.path.join(self.reaper.data_dir, self.device_id)
@@ -177,7 +188,8 @@ class App(object):
                                progress_fun)
 
             # remove file
-            self.reaper.rm(f['name'])
+            if self.rm_after_download:
+                self.reaper.rm(f['name'])
             self.file_list = self.file_list[1:]
             self.update_file_count()
 
@@ -190,6 +202,18 @@ def edit_field(caption, edit_text, handler):
     edit = uw.Edit(caption, edit_text)
     ef = EditField(edit, handler)
     return uw.BoxAdapter(ef, height=1)
+
+
+class Clock(uw.Text):
+    def refresh_once(self):
+        now = datetime.datetime.utcnow()
+        self.set_text('{}\n{}'.format(
+            now.strftime('%Y-%m-%d'),
+            now.strftime('%H:%M:%S UTC')))
+
+    def refresh(self, loop=None, data=None):
+        self.refresh_once()
+        loop.set_alarm_in(1, self.refresh)
 
 
 class EditField(uw.Filler):
