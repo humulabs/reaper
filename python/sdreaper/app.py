@@ -1,6 +1,7 @@
 import os
 import locale
 import datetime
+import time
 import urwid as uw
 from urwid_timed_progress import TimedProgressBar
 
@@ -23,7 +24,7 @@ class App(object):
 
     locale.setlocale(locale.LC_ALL, '')
 
-    def __init__(self, reaper, rm_after_download=True):
+    def __init__(self, reaper, rm_after_download=True, auto_run=False):
         self.rm_after_download = rm_after_download
         self.reaper = reaper
         self.file_progress = TimedProgressBar('normal',
@@ -106,8 +107,14 @@ class App(object):
         self._status = uw.Text('-ready-')
         self.debug_message = uw.Text('')
 
-        footer = uw.Text(
-            'r = run download | c = change device name | q  = exit')
+        commands = [('r', 'run download'),
+                    ('n', 'set device name'),
+                    ('c', 'set device clock'),
+                    ('q', 'exit')]
+
+        footer = uw.Text(' | '.join(['{} = {}'.format(key, text)
+                                    for key, text in commands]))
+
         self.footer = uw.AttrWrap(footer, 'footer')
 
         main_view = uw.Frame(uw.ListBox([info_box,
@@ -129,16 +136,32 @@ class App(object):
                 raise uw.ExitMainLoop()
             elif key in ('r', 'R'):
                 self.download()
-                self.status('-ready-')
             elif key in ('c', 'C'):
+                self.set_device_clock()
+            elif key in ('n', 'N'):
                 self.status('Enter new Device Name')
                 self.device_name.edit_mode()
 
         self.loop = uw.MainLoop(main_view,
                                 App.palette,
                                 unhandled_input=keypress)
+        if auto_run:
+            def run(*args, **kwargs):
+                self.set_device_clock()
+                time.sleep(.5)
+                self.download()
+            self.loop.set_alarm_in(0.5, run)
+        else:
+            self.loop.set_alarm_in(0.5, self.set_device_clock)
+
         self.loop.set_alarm_in(1, self.clock.refresh)
         self.loop.run()
+
+    def set_device_clock(self, *args, **kwargs):
+        self.status('Setting device clock to current UTC time ...')
+        self.reaper.set_time()
+        dt = self.reaper.get_time()
+        self.status('Device clock set to {}\n\n-ready-'.format(dt))
 
     def status(self, msg):
         self._status.set_text(msg)
@@ -155,7 +178,8 @@ class App(object):
     def download(self):
         if self.file_list is None:
             self.get_file_list()
-        self.overall_progress.done = sum([f['size'] for f in self.file_list])
+        total_size = sum([f['size'] for f in self.file_list])
+        self.overall_progress.done = total_size if total_size != 0 else .001
         self.status('starting download ...')
         for f in list(self.file_list):
             if f['size'] > 0:
@@ -192,6 +216,7 @@ class App(object):
                 self.reaper.rm(f['name'])
             self.file_list = self.file_list[1:]
             self.update_file_count()
+        self.status('-ready-')
 
     def debug(self, m):
         self.debug_message.set_text(m)

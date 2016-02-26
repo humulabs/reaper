@@ -1,4 +1,3 @@
-#include <Reaper.h>
 #include <ReaperCommandProcessor.h>
 
 /**
@@ -57,6 +56,30 @@ boolean ReaperCommandProcessor::processCommandLine() {
         _reaper->listFiles();
       }
     }
+
+#ifdef ARDUINO_ARCH_SAMD
+    else if (strcmp(cmd, "get_time") == 0) {
+      uint8_t timeBuf[6];
+      char buf[4];
+      _reaper->getDateTime(timeBuf);
+      for (uint8_t i = 0; i < sizeof(timeBuf); i++) {
+        _stream->print(itoa(timeBuf[i], buf, 10));
+        _stream->print(' ');
+      }
+    }
+
+    else if (strcmp(cmd, "set_time") == 0) {
+      uint8_t timeBuf[6] = {0, 0, 0, 0, 0, 0};
+      for (uint8_t i = 0; i < sizeof(timeBuf); i++) {
+        char *tok = strtok(NULL, " ");
+        if (tok == NULL) {
+          break;
+        }
+        timeBuf[i] = atoi(tok);
+      }
+      _reaper->setDateTime(timeBuf);
+    }
+#endif
 
     else if (strcmp(cmd, "echo") == 0) {
       _stream->println(strtok(NULL, ""));

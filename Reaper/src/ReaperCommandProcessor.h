@@ -2,6 +2,7 @@
 #define ReaperCommandProcessor_h
 
 #include <Reaper.h>
+#include <stdlib.h>
 
 #define COMMAND_BUFFER_SIZE 128
 

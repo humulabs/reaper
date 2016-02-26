@@ -14,7 +14,10 @@ Examples:
 Options:
   -p PORT --port=PORT      USB port to use [default: /dev/tty.usbmodem1421]
   -d DATA --data=DATA      data directory to use [default: data]
+  -r --run                 begin download automatically
   --monitor                monitor and print serial output (diagnostic use)
+  --get-time               get device time, assumed to be UTC
+  --set-time               set device time to current system time, in UTC
   --no-rm                  do not remove files after download, by default
                            files are removed after they are downloaded
   -h --help                show help
@@ -44,11 +47,17 @@ def main():
     if args['--monitor']:
         while True:
             reaper.read()
+    elif args['--get-time']:
+        reaper.echo = False
+        print(reaper.get_time())
+    elif args['--set-time']:
+        reaper.echo = False
+        print(reaper.set_time())
     elif commands:
         reaper.commands(commands)
     else:
         reaper.echo = False
-        App(reaper, not args['--no-rm'])
+        App(reaper, not args['--no-rm'], args['--run'])
 
 if __name__ == '__main__':
     sys.exit(main())

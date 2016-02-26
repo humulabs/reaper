@@ -1,4 +1,5 @@
 import time
+import datetime
 import timeit
 import os
 import io
@@ -138,6 +139,37 @@ class Reaper(object):
     def cp(self, sd_filename, local_filename, size, progress_fun=None):
         self.send_command('cp {}'.format(sd_filename))
         self.receiveFile(local_filename, size, progress_fun)
+
+    def set_time(self, time=None):
+        """Set device time in UTC"""
+        if time is None:
+            time = datetime.datetime.utcnow()
+        self.send_command('set_time {} {} {} {} {} {}'.format(time.year - 2000,
+                                                             time.month,
+                                                             time.day,
+                                                             time.hour,
+                                                             time.minute,
+                                                             time.second))
+        return self.read(stringify=True)
+
+    def get_time(self):
+        """Get device time, assumed to be in UTC"""
+        self.send_command('get_time')
+
+        # 6 unsigned ints in range (0-255)
+        # year - 0 = year 2000
+        # month - 1-12
+        # day 1-31
+        # minute 0-59
+        # second 0-60 (could theoretically have a leap second, but this
+        #              will not happen unless set_time is used with a
+        #              leap second and then get_time completes within
+        #              the same second)
+        time_string = self.read(stringify=True)
+        year, month, day, hour, minute, second = map(int, time_string.split())
+        dt = datetime.datetime(year + 2000, month, day, hour, minute, second,
+                               tzinfo=datetime.timezone.utc)
+        return dt
 
     def ls(self):
         """Get list of files"""

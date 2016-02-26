@@ -24,6 +24,9 @@ void Reaper::init() {
   else {
     Serial.println(F("Connected to SD card at full speed"));
   }
+#ifdef ARDUINO_ARCH_SAMD
+  _rtc.begin();
+#endif
 }
 
 /**
@@ -178,3 +181,55 @@ void Reaper::sendFile(char *filename) {
   _xmodem.send(&file);
   file.close();
 }
+
+#ifdef ARDUINO_ARCH_SAMD
+
+/**
+ * Set the date and time of the SAMD chip.
+ *
+ * @param year    2000 based (a value of 0 is year 2000)
+ * @param month   1-12
+ * @param day     1-31
+ * @param hour   0-24
+ * @param minute 0-59
+ * @param second 0-60, 60 is only for leap second
+ */
+void Reaper::setDateTime(uint8_t year, uint8_t month, uint8_t day,
+                         uint8_t hour, uint8_t minute, uint8_t second) {
+  _rtc.setDate(day, month, year);
+  _rtc.setTime(hour, minute, second);
+}
+
+/**
+ * Set the date and time of the SAMD chip.
+ *
+ * @param fields byte array of date time fields
+ * - 0: year, 2000 based (a value of 0 is year 2000)
+ * - 1: month (1-12)
+ * - 2: day (1-31)
+ * - 3: hour (0-24)
+ * - 4: minute (0-59)
+ * - 5: second (0-60), 60 is only for leap second
+ */
+void Reaper::setDateTime(uint8_t fields[6]) {
+  setDateTime(fields[0], fields[1], fields[2],
+              fields[3], fields[4], fields[5]);
+}
+
+/**
+ * Get date and time from the SAMD chip.
+ *
+ * @param fields pointer to 6 byte array that will receive
+ * the date and time, in the same format as setDateTime(uint8_t fields[6])
+ *
+ * @see setDateTime(uint8_t fields[6])
+ */
+void Reaper::getDateTime(uint8_t *fields) {
+  fields[0] = _rtc.getYear();
+  fields[1] = _rtc.getMonth();
+  fields[2] = _rtc.getDay();
+  fields[3] = _rtc.getHours();
+  fields[4] = _rtc.getMinutes();
+  fields[5] = _rtc.getSeconds();
+}
+#endif
