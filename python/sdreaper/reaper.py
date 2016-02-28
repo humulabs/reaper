@@ -4,6 +4,7 @@ import timeit
 import os
 import io
 import serial
+from serial.tools.list_ports import comports
 from serial.serialutil import SerialException
 from xmodem import XMODEM1k
 
@@ -19,7 +20,7 @@ SYN = 0x16
 
 
 class Reaper(object):
-    def __init__(self, port=None, data_dir='data', timeout=0.5, echo=True):
+    def __init__(self, port=None, data_dir=None, timeout=0.5, echo=True):
         self.port = port
         self.data_dir = data_dir
         self.timeout = timeout
@@ -28,26 +29,58 @@ class Reaper(object):
         self._devices_by_id = None
         self._devices_by_name = {}
 
-        if not os.path.exists(self.data_dir):
+        if data_dir and not os.path.exists(self.data_dir):
             os.makedirs(self.data_dir)
 
     def pr(self, s, end='\n', flush=False):
         if self.echo:
             print(s, end=end, flush=flush)
 
-    def connect(self):
-        """Connect to serial port, waiting until it is ready"""
-        self.pr('connecting to {} ...'.format(self.port))
+    @staticmethod
+    def find():
+        """Find devices running Arduino Reaper.
 
-        while self.conn is None:
+        This function enumerates the USB ports on the system and tries to
+        connect to each and get device information.
+
+        Returns list of port names that appear to be Arduino Reaper devices.
+        """
+        def is_reaper_device(port):
+            try:
+                reaper = Reaper(port=port, echo=False)
+                return reaper.connect() and reaper.info(timeout=5)
+            except Exception as e:
+                return False
+
+        # only consider ports that appear to be USB devices
+        usb_ports = [p.device for p in comports() if p.usb_description()]
+
+        # return reaper devices
+        return [p for p in usb_ports if is_reaper_device(p)]
+
+    def connect(self, retry_delay=1.0, max_tries=None):
+        """Connect to serial port, waiting until it is ready"""
+        self.pr('connecting to port {} ...'.format(self.port),
+                end='',
+                flush=True)
+
+        tries = 0
+        while self.conn is None and (max_tries is None or tries < max_tries):
+            tries += 1
             try:
                 self.conn = serial.Serial(port=self.port, timeout=self.timeout)
+                self.pr(' connected')
+                time.sleep(.1)
+                return True
             except SerialException as se:
-                time.sleep(1.0)
+                time.sleep(retry_delay)
                 self.pr('.', end='.', flush=True)
+        return False
 
-        self.pr('\nconnected to {}'.format(self.port))
-        time.sleep(.1)
+    def disconnect(self):
+        if self.conn:
+            self.pr('disconnecting {}'.format(self.conn.name))
+            self.conn.close()
 
     def read(self, timeout=None, stringify=False):
         """Read until EOT and return data read, not including EOT
@@ -58,14 +91,14 @@ class Reaper(object):
         """
         data = []
         t1 = time.time()
-        t2 = 0
+        t2 = t1
 
         while True:
-            bytesRead = self.conn.read(size=1)
-            if not bytesRead or bytesRead[0] == EOT:
-                break
             t2 = time.time()
             if timeout is not None and t2 - t1 > timeout:
+                break
+            bytesRead = self.conn.read(size=1)
+            if not bytesRead or bytesRead[0] == EOT:
                 break
             self.pr(chr(bytesRead[0]), end='', flush=True)
             data.append(bytesRead[0])
@@ -75,8 +108,13 @@ class Reaper(object):
         else:
             return data
 
-    def sync(self):
+    def sync(self, timeout=None):
+        t1 = time.time()
+        t2 = t1
         while True:
+            t2 = time.time()
+            if timeout is not None and t2 - t1 > timeout:
+                raise TimeoutError()
             self.conn.write([SYN])
             time.sleep(.01)
             response = self.read(timeout=1)
@@ -112,11 +150,12 @@ class Reaper(object):
             def progress_fun(num_bytes, w):
                 print('.', end='', flush=True)
 
+            prev_echo = self.echo
             self.echo = False
             self.receiveFile(local_filename, size, progress_fun)
-            self.echo = True
+            self.echo = prev_echo
 
-            print('received {}, size={}'.format(filename, size))
+            self.pr('received {}, size={}'.format(filename, size))
         elif verb == 'info':
             self.send_command(command)
             return self.read()
@@ -124,10 +163,11 @@ class Reaper(object):
             self.send_command(command)
             return self.read()
 
-    def info(self):
-        self.send_command('info')
+    def info(self, timeout=None):
+        self.send_command('info', timeout=timeout)
         fields = {}
-        for line in self.read(stringify=True).splitlines():
+        response = self.read(stringify=True, timeout=timeout) or ''
+        for line in response.splitlines():
             name, value = line.split('\t')
             fields[name] = value
         return fields
@@ -145,11 +185,11 @@ class Reaper(object):
         if time is None:
             time = datetime.datetime.utcnow()
         self.send_command('set_time {} {} {} {} {} {}'.format(time.year - 2000,
-                                                             time.month,
-                                                             time.day,
-                                                             time.hour,
-                                                             time.minute,
-                                                             time.second))
+                                                              time.month,
+                                                              time.day,
+                                                              time.hour,
+                                                              time.minute,
+                                                              time.second))
         return self.read(stringify=True)
 
     def get_time(self):
@@ -196,8 +236,8 @@ class Reaper(object):
             prev_level = level
         return result
 
-    def send_command(self, command):
-        self.sync()
+    def send_command(self, command, timeout=None):
+        self.sync(timeout=timeout)
         time.sleep(.01)
         for c in command.rstrip('\n'):
             self.conn.write([ord(c)])

@@ -49,6 +49,7 @@ class App(object):
 
         info_text = [
             'Device Id: {}'.format(self.device_id),
+            'Port: {}'.format(self.reaper.conn.name),
             'SD Info: {} {} {} {} {}'.format(
                 info['sd_mid'][2:],
                 info['sd_oid'],

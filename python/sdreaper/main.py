@@ -2,28 +2,25 @@
 
 """
 Usage: sdreaper [options] [<command>...]
-       sdreaper -h | --help | --version
 
 Examples:
-    # launch UI using default USB port
     sdreaper
-
-    # launch UI with specified USB port
-    sdreaper -p COM6
+    sdreaper -d c:\\tag-data
 
 Options:
-  -p PORT --port=PORT      USB port to use [default: /dev/tty.usbmodem1421]
-  -d DATA --data=DATA      data directory to use [default: data]
   -r --run                 begin download automatically
-  --monitor                monitor and print serial output (diagnostic use)
+  -d DATA --data=DATA      data directory to use [default: data]
+
+Advanced Options:
+  -p PORT --port=PORT      Port to use. By default the port is auto detected.
+  --monitor                monitor and print serial output
   --get-time               get device time, assumed to be UTC
   --set-time               set device time to current system time, in UTC
+  --find-devices           list connected Arduino Reaper boards
   --no-rm                  do not remove files after download, by default
                            files are removed after they are downloaded
   -h --help                show help
   --version                show version
-
-Interactive utility app to work with board running Arduino Reaper library.
 """
 
 import sys
@@ -40,10 +37,25 @@ logging.basicConfig(format='%(levelname)-5s %(message)s',
 def main():
     args = docopt(__doc__, version='sdreaper 1.0.1')
 
-    reaper = Reaper(port=args['--port'], data_dir=args['--data'])
+    if args['--find-devices']:
+        print('Finding devices...\n')
+        for p in Reaper.find():
+            print(p)
+        return
+
+    port = args.get('--port')
+    if not port:
+        try:
+            port = Reaper.find()[0]
+        except IndexError:
+            print('Unable to auto-detect device. Please check connection.\n'
+                  'If device is connected you may need to specify port'
+                  ' with -p')
+            return 1
+
+    reaper = Reaper(port=port, data_dir=args['--data'])
     reaper.connect()
 
-    commands = args['<command>']
     if args['--monitor']:
         while True:
             reaper.read()
@@ -53,11 +65,13 @@ def main():
     elif args['--set-time']:
         reaper.echo = False
         print(reaper.set_time())
-    elif commands:
-        reaper.commands(commands)
+    elif args['<command>']:
+        reaper.commands(args['<command>'])
     else:
         reaper.echo = False
         App(reaper, not args['--no-rm'], args['--run'])
+
+    reaper.disconnect()
 
 if __name__ == '__main__':
     sys.exit(main())

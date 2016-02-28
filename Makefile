@@ -10,7 +10,7 @@ SKETCH ?= CommandLoop
 
 DOXYGEN ?= /Applications/Doxygen.app/Contents/Resources/doxygen
 
-go: upload run
+go: upload
 
 build_dir:
 	@mkdir -p build
@@ -33,7 +33,7 @@ upload: build_dir
 	           --port $(PORT) \
 	           --upload $(realpath $(SKETCH_DIR)/$(SKETCH)/$(SKETCH).ino)
 
-run:
-	python python/sdreaper/main.py -p $(PORT) --monitor
+monitor:
+	python python/sdreaper/main.py --monitor
 
 .PHONY: go compile upload run doc build_dir install
