@@ -5,7 +5,7 @@ Serial port. The main use case is recovering sensor data from a sealed data
 logger that does not have wifi or easy access  to the SD card itself.
 
 ## Install
-1. install Arduino DIDE 1.6.7
+1. install Arduino IDE 1.6.7
 1. install SdFat-beta Arduino library
 1. install Reaper Arduino library
 1. make install
