@@ -29,6 +29,9 @@ SKETCH_DIR=sketches SKETCH=bench make compile
 
 # Running
 
+### run interactively
+sdreaper -p /dev/tty.usbmodem1421
+
 ### list files on SD card
 sdreaper -p /dev/tty.usbmodem1421 'ls'
 
