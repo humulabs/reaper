@@ -34,6 +34,6 @@ upload: build_dir
 	           --upload $(realpath $(SKETCH_DIR)/$(SKETCH)/$(SKETCH).ino)
 
 monitor:
-	python python/sdreaper/main.py --monitor
+	python python/sdreaper/main.py -p /dev/tty.usbmodem1412 --monitor
 
 .PHONY: go compile upload run doc build_dir install
