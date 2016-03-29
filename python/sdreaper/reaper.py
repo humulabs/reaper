@@ -221,7 +221,7 @@ class Reaper(object):
         prev_level = 0
         for line in listing.splitlines()[1:]:
             level = int((len(line) - len(line.lstrip())) / 2)
-            date, time, size, name = line.split()
+            date, time, size, name = line.split(maxsplit=3)
 
             if name.endswith('/'):
                 current_dir[level:] = [name]
