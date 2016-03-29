@@ -4,17 +4,17 @@
 
 #include <ReaperCommandProcessor.h>
 
-const int chipSelect = 10;
+const int chipSelect = SS;
 
 Reaper reaper = Reaper(SerialUSB, chipSelect);
 ReaperCommandProcessor proc(SerialUSB, reaper);
 
 void setup()
 {
-  pinMode(13, OUTPUT);
-  digitalWrite(13, LOW);
+  pinMode(12, OUTPUT);
+  digitalWrite(12, LOW);
 
-  SerialUSB.begin(9600);
+  SerialUSB.begin(9600, SERIAL_8N1);
   Serial.begin(9600, SERIAL_8N1);
   while (!SerialUSB);
 
@@ -22,7 +22,7 @@ void setup()
   reaper.init();
   SerialUSB.println("OK");
   Serial.println("Ready");
-  digitalWrite(13, LOW);
+  digitalWrite(12, HIGH);
 }
 
 void loop(void) {

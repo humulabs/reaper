@@ -7,6 +7,7 @@ logger that does not have wifi or easy access  to the SD card itself.
 ## Install
 1. install Arduino IDE 1.6.7
 1. install SdFat-beta Arduino library
+1. Install RTCZero library https://github.com/arduino-libraries/RTCZero
 1. install Reaper Arduino library
 1. make install
 
@@ -27,6 +28,9 @@ SKETCH_DIR=sketches SKETCH=bench make compile
 ```
 
 # Running
+
+### run interactively
+sdreaper -p /dev/tty.usbmodem1421
 
 ### list files on SD card
 sdreaper -p /dev/tty.usbmodem1421 'ls'
