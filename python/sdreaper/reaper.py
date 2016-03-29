@@ -157,13 +157,20 @@ class Reaper(object):
 
             self.pr('received {}, size={}'.format(filename, size))
         elif verb == 'info':
-            self.send_command(command)
-            return self.read()
+            return self.info()
         else:
             self.send_command(command)
             return self.read()
 
-    def info(self, timeout=None):
+    def info(self, timeout=None, min_fields=2, tries=3, delay=1):
+        while tries > 0:
+            fields = self._info(timeout)
+            if len(fields) >= min_fields:
+                return fields
+            tries -= 1
+            time.sleep(delay)
+
+    def _info(self, timeout=None):
         self.send_command('info', timeout=timeout)
         fields = {}
         response = self.read(stringify=True, timeout=timeout) or ''
@@ -260,7 +267,7 @@ class Reaper(object):
         xm = XMODEM1k(getc, putc)
         with open(filename, 'wb+') as f:
             stream = StreamWriter(f, progress_fun)
-            xm.recv(stream)
+            xm.recv(stream, retry=3, timeout=5)
             report = stream.report()
             f.truncate(size)
             self.conn.timeout = self.timeout
@@ -350,6 +357,9 @@ class StreamWriter(object):
 
     def report(self):
         elapsed = self._latest_time - self._start_time
-        rate = round(float(self._bytes_written) / 1000 / elapsed, 1)
+        if elapsed == 0:
+            rate = 0;
+        else:
+            rate = round(float(self._bytes_written) / 1000 / elapsed, 1)
         return 'received {} bytes in {} seconds, rate: {} KB/s'.format(
             self._bytes_written, round(elapsed, 2), rate)

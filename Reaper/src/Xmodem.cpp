@@ -128,7 +128,8 @@ size_t Xmodem::readPacket() {
  */
 size_t Xmodem::fileRead(uint8_t *buffer, size_t count) {
 #ifdef ARDUINO
-  return _file->read(buffer, count);
+  int n = _file->read(buffer, count);
+  return n < 0 ? 0 : (size_t)n;
 #else
   return fread(buffer, 1, count, _file);
 #endif // ifdef ARDUINO
