@@ -9,7 +9,8 @@ Examples:
 
 Options:
   -r --run                 begin download automatically
-  -d DATA --data=DATA      data directory to use [default: data]
+  -d DATA --data=DATA      destination directory of downloads [default: data]
+  --sd-data-dir=SD-DATA    source dir to download from SD card [default: /data]
 
 Advanced Options:
   -p PORT --port=PORT      Port to use. By default the port is auto detected.
@@ -69,7 +70,7 @@ def main():
         reaper.commands(args['<command>'])
     else:
         reaper.echo = False
-        App(reaper, not args['--no-rm'], args['--run'])
+        App(reaper, not args['--no-rm'], args['--run'], args['--sd-data-dir'])
 
     reaper.disconnect()
 

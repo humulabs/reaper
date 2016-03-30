@@ -24,8 +24,10 @@ class App(object):
 
     locale.setlocale(locale.LC_ALL, '')
 
-    def __init__(self, reaper, rm_after_download=True, auto_run=False):
+    def __init__(self, reaper, rm_after_download=True, auto_run=False,
+                 sd_data_dir=''):
         self.rm_after_download = rm_after_download
+        self.sd_data_dir = sd_data_dir
         self.reaper = reaper
         self.file_progress = TimedProgressBar('normal',
                                               'complete',
@@ -44,7 +46,7 @@ class App(object):
         info = self.reaper.info()
         self.device_id = info['samd_id'][2:]
         self.file_count = uw.Text('')
-        self.file_list = self.reaper.ls()
+        self.file_list = self.reaper.ls(self.sd_data_dir)
         self.update_file_count()
 
         info_text = [

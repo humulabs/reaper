@@ -158,6 +158,12 @@ class Reaper(object):
             self.pr('received {}, size={}'.format(filename, size))
         elif verb == 'info':
             return self.info()
+        elif verb == 'ls':
+            try:
+                prefix = parts[1]
+            except:
+                prefix = ''
+            print(self.ls(prefix))
         else:
             self.send_command(command)
             return self.read()
@@ -218,7 +224,7 @@ class Reaper(object):
                                tzinfo=datetime.timezone.utc)
         return dt
 
-    def ls(self):
+    def ls(self, prefix=''):
         """Get list of files"""
         self.send_command('ls')
         result = []
@@ -241,7 +247,7 @@ class Reaper(object):
 
             name = current_dir
             prev_level = level
-        return result
+        return [f for f in result if f['name'].startswith(prefix)]
 
     def send_command(self, command, timeout=None):
         self.sync(timeout=timeout)
