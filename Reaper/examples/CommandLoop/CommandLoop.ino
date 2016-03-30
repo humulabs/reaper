@@ -4,7 +4,7 @@
 
 #include <ReaperCommandProcessor.h>
 
-const int chipSelect = SS;
+const int chipSelect = 10;
 
 Reaper reaper = Reaper(SerialUSB, chipSelect);
 ReaperCommandProcessor proc(SerialUSB, reaper);
