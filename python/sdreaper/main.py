@@ -10,7 +10,7 @@ Examples:
 Options:
   -r --run                 begin download automatically
   -d DATA --data=DATA      destination directory of downloads [default: data]
-  --sd-data-dir=SD-DATA    source dir to download from SD card [default: /data]
+  --sd-data-dir=SD-DATA    source dir to download from SD card [default: data]
 
 Advanced Options:
   -p PORT --port=PORT      Port to use. By default the port is auto detected.
